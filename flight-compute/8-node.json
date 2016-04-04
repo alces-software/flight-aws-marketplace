@@ -551,6 +551,12 @@
         }
     },
     "Outputs": {
+        "Username": {
+            "Description": "Administrator username used to log in to your environment with. This should be used in conjunction with your selected AWS keypair, together with the provided access IP",
+            "Value": {
+              "Ref": "Username"
+            }
+        },
         "AccessIP": {
             "Description": "Public access IP for your Flight Compute environment. Use together with your chosen username to gain SSH access",
             "Value": {
