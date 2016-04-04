@@ -48,7 +48,7 @@
     "Mappings": {
         "AWSRegionArch2AMI": {
             "eu-west-1": {
-                "centos7": "ami-0b28ae78"
+                "centos7": "ami-b532b3c6"
             }
         }
     },
