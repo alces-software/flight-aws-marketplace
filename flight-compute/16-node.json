@@ -231,7 +231,8 @@
                   "cloudwatch:PutMetricData",
                   "autoscaling:DescribeAutoScalingGroups",
                   "autoscaling:SetDesiredCapacity",
-                  "autoscaling:UpdateAutoScalingGroup"
+                  "autoscaling:UpdateAutoScalingGroup",
+                  "autoscaling:SetInstanceProtection"
                 ],
                 "Resource": [
                   "*"
