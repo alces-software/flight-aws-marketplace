@@ -469,7 +469,7 @@
                         "PropagateAtLaunch": "true"
                     }
                 ],
-                "MinSize": "1",
+                "MinSize": "0",
                 "MaxSize": "100",
                 "VPCZoneIdentifier": [
                     {
