@@ -1,0 +1,10 @@
+2016.2:
+- AutoScaling compute groups now dynamically change capacity based on cluster scheduler load
+- Templates now include support for deploying Alces Flight appliances
+- Templates now output administrator username used to access environment
+
+2016.1:
+- Initial templates for varying Alces Flight compute environment sizes
+  - 8 node cluster
+  - 16 node cluster
+  - 32 node cluster
