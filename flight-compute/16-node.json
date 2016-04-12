@@ -252,6 +252,9 @@
                         "Value": { "Fn::Join": [ "", [ {"Ref": "AWS::StackName"}, "-login1" ] ]}
                     }
                 ],
+                "IamInstanceProfile": {
+                  "Ref": "MasterIAMProfile"
+                },
                 "ImageId": {
                     "Fn::FindInMap": [
                         "AWSRegionArch2AMI",
