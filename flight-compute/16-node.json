@@ -482,6 +482,17 @@
                 ]
             }
         },
+        "ScaleUp5": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "PercentChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "FlightCompute"
+                },
+                "Cooldown": "300",
+                "ScalingAdjustment": "5"
+            }
+        },
         "ScaleUp10": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
@@ -489,7 +500,7 @@
                 "AutoScalingGroupName": {
                     "Ref": "FlightCompute"
                 },
-                "Cooldown": "3300",
+                "Cooldown": "300",
                 "ScalingAdjustment": "10"
             }
         },
@@ -500,20 +511,46 @@
                 "AutoScalingGroupName": {
                     "Ref": "FlightCompute"
                 },
-                "Cooldown": "3300",
+                "Cooldown": "300",
                 "ScalingAdjustment": "25"
+            }
+        },
+        "CPUAlarmHigh5": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Scale-up by 5% if currently queued jobs > 30 for 20 minutes",
+                "MetricName": "JobStatus_qw",
+                "Namespace": "ALCES-SGE",
+                "Statistic": "Average",
+                "Period": "60",
+                "EvaluationPeriods": "20",
+                "Threshold": "30",
+                "AlarmActions": [
+                    {
+                        "Ref": "ScaleUp5"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "FlightCompute"
+                        }
+                    }
+                ],
+                "ComparisonOperator": "GreaterThanThreshold"
             }
         },
         "CPUAlarmHigh10": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
-                "AlarmDescription": "Scale-up by 10% if currently queued jobs > 50 for 20 minutes",
-                "MetricName": "Queued",
-                "Namespace": "ALCES/SGE",
+                "AlarmDescription": "Scale-up by 10% if currently queued jobs > 60 for 20 minutes",
+                "MetricName": "JobStatus_qw",
+                "Namespace": "ALCES-SGE",
                 "Statistic": "Average",
                 "Period": "60",
                 "EvaluationPeriods": "20",
-                "Threshold": "90",
+                "Threshold": "30",
                 "AlarmActions": [
                     {
                         "Ref": "ScaleUp10"
@@ -534,8 +571,8 @@
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "AlarmDescription": "Scale-up by 25% if currently queued jobs > 100 for 20 minutes",
-                "MetricName": "Queued",
-                "Namespace": "ALCES/SGE",
+                "MetricName": "JobStatus_qw",
+                "Namespace": "ALCES-SGE",
                 "Statistic": "Average",
                 "Period": "60",
                 "EvaluationPeriods": "20",
