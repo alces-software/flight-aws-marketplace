@@ -2,6 +2,7 @@
 - AutoScaling compute groups now dynamically change capacity based on cluster scheduler load
 - Templates now include support for deploying Alces Flight appliances
 - Templates now output administrator username used to access environment
+- Compute hosts can now optionally be deployed as spot or dedicated instances
 
 2016.1:
 - Initial templates for varying Alces Flight compute environment sizes

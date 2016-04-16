@@ -6,19 +6,18 @@
             "Type": "AWS::EC2::KeyPair::KeyName"
         },
         "Username": {
-              "Description": "Enter a username - this is used for the cluster administrator account",
-              "Type": "String",
-              "Default": "alces",
-              "MaxLength": "16",
-              "MinLength": "1",
-              "AllowedPattern": "[-a-z0-9]*",
-              "ConstraintDescription": "Enter a username between 1 and 16 characters using a-z, 1 to 9 and -"
-
+            "Description": "Enter a username - this is used for the cluster administrator account",
+            "Type": "String",
+            "Default": "alces",
+            "MaxLength": "16",
+            "MinLength": "1",
+            "AllowedPattern": "[-a-z0-9]*",
+            "ConstraintDescription": "Enter a username between 1 and 16 characters using a-z, 1 to 9 and -"
         },
         "SpotPrice": {
             "Description": "Enter your maximum bid per hour for each compute instance. View the Spot Request calculator for information on spot pricing.",
-            "Type": "String",
-            "Default": "0.50"
+            "Type": "Number",
+            "Default": "0.5"
         },
         "SystemDiskSize": {
             "Description": "Select the size in GB of root system disk to use for all deployed nodes in the environment",
@@ -43,6 +42,20 @@
             "ConstraintDescription": "Please specify a valid IP range, e.g. 101.21.2.0/16"
         }
     },
+    "Conditions": {
+        "UseSpotCompute": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "SpotPrice"
+                        },
+                        "0"
+                    ]
+                }
+            ]
+        }
+    },
     "Mappings": {
         "AWSRegionArch2AMI": {
             "eu-west-1": {
@@ -52,13 +65,13 @@
         "LoginType2SystemDisk": {
             "t2.large": {
                 "rootdisk": "8"
-              },
-              "c3.large": {
+            },
+            "c3.large": {
                 "rootdisk": "100"
-              },
-              "c4.large": {
+            },
+            "c4.large": {
                 "rootdisk": "100"
-              }
+            }
         }
     },
     "Resources": {
@@ -105,7 +118,17 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ {"Ref": "AWS::StackName"}, "-subnet" ] ]}
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "-subnet"
+                                ]
+                            ]
+                        }
                     }
                 ]
             }
@@ -178,7 +201,7 @@
                         "FromPort": "5900",
                         "ToPort": "5920",
                         "CidrIp": {
-			                     "Ref": "NetworkCIDR"
+                            "Ref": "NetworkCIDR"
                         }
                     },
                     {
@@ -201,55 +224,64 @@
             }
         },
         "MasterIAM": {
-          "Type": "AWS::IAM::Role",
-          "Properties": {
-            "AssumeRolePolicyDocument": {
-              "Statement": [ {
-                "Effect": "Allow",
-                "Principal": {
-                  "Service": [
-                    "ec2.amazonaws.com"
-                  ]
-                },
-                "Action": [
-                  "sts:AssumeRole"
-                ]
-                }]
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                }
             }
-          }
         },
         "MasterIAMProfile": {
-          "Type": "AWS::IAM::InstanceProfile",
-          "Properties": {
-            "Path": "/",
-            "Roles": [
-              { "Ref": "MasterIAM"
-              }
-            ]
-          }
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "MasterIAM"
+                    }
+                ]
+            }
         },
         "MetricData": {
-          "Type": "AWS::IAM::Policy",
-          "Properties": {
-            "PolicyName": "MetricData",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [ {
-                "Effect": "Allow",
-                "Action": [
-                  "cloudwatch:PutMetricData",
-                  "autoscaling:DescribeAutoScalingGroups",
-                  "autoscaling:SetDesiredCapacity",
-                  "autoscaling:UpdateAutoScalingGroup",
-		  "autoscaling:SetInstanceProtection"
-                ],
-                "Resource": [
-                  "*"
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "MetricData",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "cloudwatch:PutMetricData",
+                                "autoscaling:DescribeAutoScalingGroups",
+                                "autoscaling:SetDesiredCapacity",
+                                "autoscaling:UpdateAutoScalingGroup",
+                                "autoscaling:SetInstanceProtection"
+                            ],
+                            "Resource": [
+                                "*"
+                            ]
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "MasterIAM"
+                    }
                 ]
-                }]
-            },
-            "Roles": [ { "Ref": "MasterIAM" } ]
-          }
+            }
         },
         "FlightLogin": {
             "Type": "AWS::EC2::Instance",
@@ -258,11 +290,21 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ {"Ref": "AWS::StackName"}, "-login1" ] ]}
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "-login1"
+                                ]
+                            ]
+                        }
                     }
                 ],
                 "IamInstanceProfile": {
-                  "Ref": "MasterIAMProfile"
+                    "Ref": "MasterIAMProfile"
                 },
                 "ImageId": {
                     "Fn::FindInMap": [
@@ -278,12 +320,12 @@
                         "AssociatePublicIpAddress": "True",
                         "DeviceIndex": "0",
                         "GroupSet": [
-                          {
-                              "Ref": "FlightSG"
-                          }
+                            {
+                                "Ref": "FlightSG"
+                            }
                         ],
                         "SubnetId": {
-                              "Ref": "FlightSubnet"
+                            "Ref": "FlightSubnet"
                         }
                     }
                 ],
@@ -291,7 +333,15 @@
                     {
                         "DeviceName": "/dev/sda1",
                         "Ebs": {
-                            "VolumeSize": { "Fn::FindInMap": [ "LoginType2SystemDisk", { "Ref": "LoginType" }, "rootdisk"] }
+                            "VolumeSize": {
+                                "Fn::FindInMap": [
+                                    "LoginType2SystemDisk",
+                                    {
+                                        "Ref": "LoginType"
+                                    },
+                                    "rootdisk"
+                                ]
+                            }
                         }
                     },
                     {
@@ -303,7 +353,9 @@
                         "VirtualName": "ephemeral1"
                     }
                 ],
-                "InstanceType": { "Ref": "LoginType" },
+                "InstanceType": {
+                    "Ref": "LoginType"
+                },
                 "KeyName": {
                     "Ref": "KeyPair"
                 },
@@ -319,7 +371,9 @@
                                 "  default_user:",
                                 "\n",
                                 "    name: ",
-                                { "Ref": "Username" },
+                                {
+                                    "Ref": "Username"
+                                },
                                 "\n",
                                 "hostname: login1",
                                 "\n",
@@ -376,19 +430,29 @@
                     ]
                 },
                 "IamInstanceProfile": {
-                  "Ref": "MasterIAMProfile"
+                    "Ref": "MasterIAMProfile"
                 },
                 "InstanceType": "c4.large",
                 "BlockDeviceMappings": [
                     {
                         "DeviceName": "/dev/sda1",
                         "Ebs": {
-                            "VolumeSize": { "Ref": "SystemDiskSize" }
+                            "VolumeSize": {
+                                "Ref": "SystemDiskSize"
+                            }
                         }
                     }
                 ],
                 "SpotPrice": {
-                    "Ref": "SpotPrice"
+                    "Fn::If": [
+                        "UseSpotCompute",
+                        {
+                            "Ref": "SpotPrice"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
                 },
                 "SecurityGroups": [
                     {
@@ -407,7 +471,9 @@
                                 "  default_user:",
                                 "\n",
                                 "    name: ",
-                                { "Ref": "Username" },
+                                {
+                                    "Ref": "Username"
+                                },
                                 "\n",
                                 "write_files:",
                                 "\n",
@@ -459,7 +525,7 @@
         "FlightCompute": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "DependsOn": "FlightLogin",
-                "Properties": {
+            "Properties": {
                 "DesiredCapacity": "8",
                 "LaunchConfigurationName": {
                     "Ref": "ComputeConfig"
@@ -470,7 +536,17 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ {"Ref": "AWS::StackName"}, "-compute" ] ]},
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "-compute"
+                                ]
+                            ]
+                        },
                         "PropagateAtLaunch": "true"
                     }
                 ],
@@ -597,9 +673,9 @@
     },
     "Outputs": {
         "Username": {
-            "Description": "Administrator username used to log in to your environment with. This should be used in conjunction with your selected AWS keypair, together with the provided access IP",
+            "Description": "Administrator username used to log in to your environment with. This should be used in conjunction with your selected AWS keypair - together with the provided access IP",
             "Value": {
-              "Ref": "Username"
+                "Ref": "Username"
             }
         },
         "AccessIP": {
@@ -610,12 +686,6 @@
                     "PublicIp"
                 ]
             }
-        },
-	"Username": {
-	    "Description": "Administrator username used to log in to your environment with. This should be used in conjunction with your selected AWS keypair - together with the provided access IP",
-	    "Value": {
-	        "Ref": "Username"
-	    }
-	}
+        }
     }
 }
