@@ -19,8 +19,8 @@
             "Type": "Number",
             "Default": "0.5"
         },
-        "SystemDiskSize": {
-            "Description": "Select the size in GB of root system disk to use for all deployed nodes in the environment",
+        "LoginSystemDiskSize": {
+            "Description": "Enter the size in GB of shared system disk to deploy. This defines the amount of shared user storage and application storage available",
             "Type": "String",
             "Default": "500"
         },
@@ -60,17 +60,6 @@
         "AWSRegionArch2AMI": {
             "eu-west-1": {
                 "centos7": "ami-b532b3c6"
-            }
-        },
-        "LoginType2SystemDisk": {
-            "t2.large": {
-                "rootdisk": "8"
-            },
-            "c3.large": {
-                "rootdisk": "100"
-            },
-            "c4.large": {
-                "rootdisk": "100"
             }
         }
     },
@@ -334,13 +323,7 @@
                         "DeviceName": "/dev/sda1",
                         "Ebs": {
                             "VolumeSize": {
-                                "Fn::FindInMap": [
-                                    "LoginType2SystemDisk",
-                                    {
-                                        "Ref": "LoginType"
-                                    },
-                                    "rootdisk"
-                                ]
+			        "Ref": "LoginSystemDiskSize"
                             }
                         }
                     },
@@ -437,9 +420,7 @@
                     {
                         "DeviceName": "/dev/sda1",
                         "Ebs": {
-                            "VolumeSize": {
-                                "Ref": "SystemDiskSize"
-                            }
+                            "VolumeSize": "20"
                         }
                     }
                 ],

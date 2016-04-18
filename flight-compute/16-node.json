@@ -20,8 +20,8 @@
             "Type": "Number",
             "Default": "0.5"
         },
-        "SystemDiskSize": {
-            "Description": "Select the size in GB of root system disk to use for all deployed nodes in the environment",
+        "LoginSystemDiskSize": {
+            "Description": "Enter the size in GB of shared system disk to deploy. This defines the amount of shared user storage and application storage available",
             "Type": "Number",
             "Default": "500",
             "MinValue": "8",
@@ -296,7 +296,7 @@
                     {
                         "DeviceName": "/dev/sda1",
                         "Ebs": {
-                            "VolumeSize": { "Ref": "SystemDiskSize" }
+                            "VolumeSize": { "Ref": "LoginSystemDiskSize" }
                         }
                     },
                     {
@@ -388,7 +388,7 @@
                     {
                         "DeviceName": "/dev/sda1",
                         "Ebs": {
-                            "VolumeSize": { "Ref": "SystemDiskSize" }
+                            "VolumeSize": "20"
                         }
                     },
                     {
