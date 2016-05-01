@@ -14,10 +14,15 @@
             "AllowedPattern": "[-a-z0-9]*",
             "ConstraintDescription": "Enter a username between 1 and 16 characters using a-z, 1 to 9 and -"
         },
-        "SpotPrice": {
+        "ComputeSpotPrice": {
             "Description": "Enter your maximum bid per hour for each compute instance. View the Spot Request calculator for information on spot pricing. (Enter 0 for on-demand)",
             "Type": "Number",
             "Default": "0"
+        },
+        "InitialNodes": {
+            "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
+            "Type": "Number",
+            "Default": "0" 
         },
         "LoginSystemDiskSize": {
             "Description": "Enter the size in GB of shared system disk to deploy. This defines the amount of shared user storage and application storage available",
@@ -48,7 +53,19 @@
                 {
                     "Fn::Equals": [
                         {
-                            "Ref": "SpotPrice"
+                            "Ref": "ComputeSpotPrice"
+                        },
+                        "0"
+                    ]
+                }
+            ]
+        },
+	"UseAlarms": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "InitialNodes"
                         },
                         "0"
                     ]
@@ -213,6 +230,7 @@
             }
         },
         "MasterIAM": {
+            "Condition":  "UseAlarms",
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "AssumeRolePolicyDocument": {
@@ -233,6 +251,7 @@
             }
         },
         "MasterIAMProfile": {
+            "Condition":  "UseAlarms",
             "Type": "AWS::IAM::InstanceProfile",
             "Properties": {
                 "Path": "/",
@@ -244,6 +263,7 @@
             }
         },
         "MetricData": {
+            "Condition":  "UseAlarms",
             "Type": "AWS::IAM::Policy",
             "Properties": {
                 "PolicyName": "MetricData",
@@ -293,7 +313,15 @@
                     }
                 ],
                 "IamInstanceProfile": {
-                    "Ref": "MasterIAMProfile"
+                    "Fn::If": [
+                        "UseAlarms",
+                        {
+                            "Ref": "MasterIAMProfile"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
                 },
                 "ImageId": {
                     "Fn::FindInMap": [
@@ -412,8 +440,16 @@
                         "centos7"
                     ]
                 },
-                "IamInstanceProfile": {
-                    "Ref": "MasterIAMProfile"
+		"IamInstanceProfile": {
+                    "Fn::If": [
+                        "UseAlarms",
+                        {
+                            "Ref": "MasterIAMProfile"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
                 },
                 "InstanceType": "c4.large",
                 "BlockDeviceMappings": [
@@ -428,7 +464,7 @@
                     "Fn::If": [
                         "UseSpotCompute",
                         {
-                            "Ref": "SpotPrice"
+                            "Ref": "ComputeSpotPrice"
                         },
                         {
                             "Ref": "AWS::NoValue"
@@ -504,20 +540,28 @@
             }
         },
         "FlightCompute": {
-            "Type": "AWS::AutoScaling::AutoScalingGroup",
-            "DependsOn": "FlightLogin",
-            "Properties": {
-                "DesiredCapacity": "8",
-                "LaunchConfigurationName": {
-                    "Ref": "ComputeConfig"
-                },
-                "PlacementGroup": {
-                    "Ref": "PlacementGroup"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
+              "Type": "AWS::AutoScaling::AutoScalingGroup",
+              "DependsOn": "FlightLogin",
+              "Properties": {
+                  "DesiredCapacity": {
+                    "Fn::If": [
+                        "UseAlarms",
+                        {
+                            "Ref": "InitialNodes"
+                        },
+                        "8"
+                    ]
+                  },
+                  "LaunchConfigurationName": {
+                      "Ref": "ComputeConfig"
+                  },
+                  "PlacementGroup": {
+                      "Ref": "PlacementGroup"
+                  },
+                  "Tags": [
+                      {
+                          "Key": "Name",
+                          "Value": {
                             "Fn::Join": [
                                 "",
                                 [
@@ -529,63 +573,43 @@
                             ]
                         },
                         "PropagateAtLaunch": "true"
-                    }
-                ],
-                "MinSize": "0",
-                "MaxSize": "100",
-                "VPCZoneIdentifier": [
+                      }
+                  ],
+                  "MinSize": "1",
+                  "MaxSize": "8",
+                  "VPCZoneIdentifier": [
                     {
                         "Ref": "FlightSubnet"
                     }
-                ]
-            }
+                  ]
+              }
         },
-        "ScaleUp5": {
-            "Type": "AWS::AutoScaling::ScalingPolicy",
-            "Properties": {
-                "AdjustmentType": "PercentChangeInCapacity",
+        "ScaleUp": {
+              "Condition":  "UseAlarms",
+              "Type": "AWS::AutoScaling::ScalingPolicy",
+              "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
                 "AutoScalingGroupName": {
                     "Ref": "FlightCompute"
                 },
                 "Cooldown": "300",
-                "ScalingAdjustment": "5"
-            }
+                "ScalingAdjustment": "1"
+              }
         },
-        "ScaleUp10": {
-            "Type": "AWS::AutoScaling::ScalingPolicy",
-            "Properties": {
-                "AdjustmentType": "PercentChangeInCapacity",
-                "AutoScalingGroupName": {
-                    "Ref": "FlightCompute"
-                },
-                "Cooldown": "300",
-                "ScalingAdjustment": "10"
-            }
-        },
-        "ScaleUp25": {
-            "Type": "AWS::AutoScaling::ScalingPolicy",
-            "Properties": {
-                "AdjustmentType": "PercentChangeInCapacity",
-                "AutoScalingGroupName": {
-                    "Ref": "FlightCompute"
-                },
-                "Cooldown": "300",
-                "ScalingAdjustment": "25"
-            }
-        },
-        "CPUAlarmHigh5": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "Scale-up by 5% if currently queued jobs > 30 for 20 minutes",
+        "CPUAlarmHigh": {
+              "Condition":  "UseAlarms",
+              "Type": "AWS::CloudWatch::Alarm",
+              "Properties": {
+                "AlarmDescription": "Scale-up if currently queued jobs exceeds limit",
                 "MetricName": "JobStatus_qw",
                 "Namespace": "ALCES-SGE",
                 "Statistic": "Average",
                 "Period": "60",
-                "EvaluationPeriods": "20",
-                "Threshold": "30",
+                "EvaluationPeriods": "5",
+                "Threshold": "1",
                 "AlarmActions": [
                     {
-                        "Ref": "ScaleUp5"
+                        "Ref": "ScaleUp"
                     }
                 ],
                 "Dimensions": [
@@ -597,69 +621,17 @@
                     }
                 ],
                 "ComparisonOperator": "GreaterThanThreshold"
-            }
-        },
-        "CPUAlarmHigh10": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "Scale-up by 10% if currently queued jobs > 60 for 20 minutes",
-                "MetricName": "JobStatus_qw",
-                "Namespace": "ALCES-SGE",
-                "Statistic": "Average",
-                "Period": "60",
-                "EvaluationPeriods": "20",
-                "Threshold": "30",
-                "AlarmActions": [
-                    {
-                        "Ref": "ScaleUp10"
-                    }
-                ],
-                "Dimensions": [
-                    {
-                        "Name": "AutoScalingGroupName",
-                        "Value": {
-                            "Ref": "FlightCompute"
-                        }
-                    }
-                ],
-                "ComparisonOperator": "GreaterThanThreshold"
-            }
-        },
-        "CPUAlarmHigh25": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "Scale-up by 25% if currently queued jobs > 100 for 20 minutes",
-                "MetricName": "JobStatus_qw",
-                "Namespace": "ALCES-SGE",
-                "Statistic": "Average",
-                "Period": "60",
-                "EvaluationPeriods": "20",
-                "Threshold": "100",
-                "AlarmActions": [
-                    {
-                        "Ref": "ScaleUp25"
-                    }
-                ],
-                "Dimensions": [
-                    {
-                        "Name": "AutoScalingGroupName",
-                        "Value": {
-                            "Ref": "FlightCompute"
-                        }
-                    }
-                ],
-                "ComparisonOperator": "GreaterThanThreshold"
-            }
+              }
         }
     },
     "Outputs": {
-        "Username": {
+          "Username": {
             "Description": "Administrator username used to log in to your environment with. This should be used in conjunction with your selected AWS keypair - together with the provided access IP",
             "Value": {
                 "Ref": "Username"
             }
-        },
-        "AccessIP": {
+          },
+          "AccessIP": {
             "Description": "Public access IP for your Flight Compute environment. Use together with your chosen username to gain SSH access",
             "Value": {
                 "Fn::GetAtt": [
@@ -667,6 +639,6 @@
                     "PublicIp"
                 ]
             }
-        }
+          }
     }
 }
