@@ -19,6 +19,17 @@
             "Type": "Number",
             "Default": "0"
         },
+        "ComputeType": {
+            "Description": "Select the compute node instance type to deploy - this defines the number of cores and memory available",
+            "Type": "String",
+            "Default": "t2.large",
+            "AllowedValues": [
+                "t2.large",
+                "c4.large",
+                "c3.2xlarge",
+                "c4.8xlarge"
+            ]
+        },
         "InitialNodes": {
             "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
             "Type": "Number",
@@ -451,7 +462,9 @@
                         }
                     ]
                 },
-                "InstanceType": "c4.large",
+                "InstanceType": {
+                     "Ref": "ComputeType"
+                },
                 "BlockDeviceMappings": [
                     {
                         "DeviceName": "/dev/sda1",
