@@ -15,9 +15,9 @@
             "ConstraintDescription": "Enter a username between 1 and 16 characters using a-z, 1 to 9 and -"
         },
         "SpotPrice": {
-            "Description": "Enter your maximum bid per hour for each compute instance. View the Spot Request calculator for information on spot pricing.",
+            "Description": "Enter your maximum bid per hour for each compute instance. View the Spot Request calculator for information on spot pricing. (Enter 0 for on-demand)",
             "Type": "Number",
-            "Default": "0.5"
+            "Default": "0"
         },
         "LoginSystemDiskSize": {
             "Description": "Enter the size in GB of shared system disk to deploy. This defines the amount of shared user storage and application storage available",
@@ -59,7 +59,7 @@
     "Mappings": {
         "AWSRegionArch2AMI": {
             "eu-west-1": {
-                "centos7": "ami-343fb047"
+                "centos7": "ami-0e43ca7d"
             }
         }
     },
