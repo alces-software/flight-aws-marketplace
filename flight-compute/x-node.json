@@ -1,0 +1,693 @@
+{
+    "Description": "Launch an Alces HPC environment with a single SGE master node together with 8 initial compute nodes using EC2 spot.",
+    "Parameters": {
+        "KeyPair": {
+            "Description": "Choose an existing AWS key for administrator access",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "Username": {
+            "Description": "Enter a username - this is used for the cluster administrator account",
+            "Type": "String",
+            "Default": "alces",
+            "MaxLength": "16",
+            "MinLength": "1",
+            "AllowedPattern": "[-a-z0-9]*",
+            "ConstraintDescription": "Enter a username between 1 and 16 characters using a-z, 1 to 9 and -"
+        },
+        "ComputeSpotPrice": {
+            "Description": "Enter your maximum bid per hour for each compute instance. View the Spot Request calculator for information on spot pricing. (Enter 0 for on-demand)",
+            "Type": "Number",
+            "Default": "0"
+        },
+        "ComputeType": {
+            "Description": "Select the compute node instance type to deploy - this defines the number of cores and memory available",
+            "Type": "String",
+            "Default": "compute.small-c4.large",
+            "AllowedValues": [
+                "compute.small-c4.large",
+                "compute.medium-c4.2xlarge",
+                "compute.large-c4.4xlarge",
+                "compute.dedicated-c4.8xlarge",
+                "balanced.small-m3.xlarge",
+                "balanced.medium-m3.2xlarge",
+                "balanced.large-m4.4xlarge",
+                "balanced.dedicated-m4.10xlarge",
+                "memory.small-r3.xlarge",
+                "memory.medium-r3.2xlarge",
+                "memory.large-r3.4xlarge",
+                "memory.dedicated-r3.8xlarge",
+                "gpu.medium-g2.2xlarge",
+                "gpu.dedicated-g2.8xlarge"
+            ]
+        },
+        "InitialNodes": {
+            "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
+            "Type": "Number",
+            "Default": "0",
+            "MaxValue": "32"
+        },
+        "LoginSystemDiskSize": {
+            "Description": "Enter the size in GB of shared system disk to deploy. This defines the amount of shared user storage and application storage available",
+            "Type": "String",
+            "Default": "500"
+        },
+        "LoginType": {
+            "Description": "Select the login node instance type to deploy - this defines the number of cores and memory available",
+            "Type": "String",
+            "Default": "large-c4.8xlarge",
+            "AllowedValues": [
+                "small-t2.large",
+                "medium-r3.2xlarge",
+                "large-c4.8xlarge"
+            ]
+        },
+        "NetworkCIDR": {
+            "Description": "Enter an address range that is permitted to access the Clusterware master node. Leave blank if unknown",
+            "Type": "String",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}",
+            "ConstraintDescription": "Please specify a valid IP range, e.g. 101.21.2.0/16"
+        },
+        "MaxNodes": {
+            "Description": "Enter the maxmimum number of nodes to scale to (when scaling is enabled) - Max 32",
+            "Type": "Number",
+            "Default": "32",
+            "MaxValue": "32"
+        }
+    },
+    "Conditions": {
+        "UseSpotCompute": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "ComputeSpotPrice"
+                        },
+                        "0"
+                    ]
+                }
+            ]
+        },
+	"UseAlarms": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "InitialNodes"
+                        },
+                        "0"
+                    ]
+                }
+            ]
+        }
+    },
+    "Mappings": {
+        "AWSRegionArch2AMI": {
+            "eu-west-1": {
+                "centos7": "ami-0e43ca7d"
+            }
+        },
+        "FlightTypeToInstanceType": {
+          "compute.small-c4.large": { "InstanceType": "c4.large" },
+          "compute.medium-c4.2xlarge": { "InstanceType": "c4.2xlarge" },
+          "compute.large-c4-4xlarge": { "InstanceType": "c4.4xlarge" },
+          "compute.dedicated-c4.8xlarge": { "InstanceType": "c4.8xlarge" },
+          "balanced.small-m3.xlarge": { "InstanceType": "m2.xlarge" },
+          "balanced.medium-m3.2xlarge": { "InstanceType": "m3.2xlarge" },
+          "balanced.large-m4.4xlarge": { "InstanceType": "m4.4xlarge" },
+          "balanced.dedicated-m4.10xlarge": { "InstanceType": "m4.10xlarge" },
+          "memory.small-r3.xlarge": { "InstanceType": "r3.xlarge" },
+          "memory.medium-r3.2xlarge": { "InstanceType": "r3.2xlarge" },
+          "memory.large-r3.4xlarge": { "InstanceType": "r3.4xlarge" },
+          "memory.dedicated-r3.8xlarge": { "InstanceType": "r3.8xlarge" },
+          "gpu.medium-g2.2xlarge": { "InstanceType": "g2.2xlarge" },
+          "gpu.dedicated-g2.8xlarge": { "InstanceType": "g2.8xlarge" },
+          "small-t2.large": { "InstanceType": "t2.large" },
+          "medium-r3.2xlarge": { "InstanceType": "r3.2xlarge" },
+          "large-c4.8xlarge": { "InstanceType": "c4.8xlarge" }
+        }
+    },
+    "Resources": {
+        "FlightVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "AWS::StackName"
+                        }
+                    }
+                ],
+                "CidrBlock": "10.75.0.0/16",
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true"
+            }
+        },
+        "FlightRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "DependsOn": "FlightVPC",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "FlightVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Application",
+                        "Value": {
+                            "Ref": "AWS::StackId"
+                        }
+                    }
+                ]
+            }
+        },
+        "FlightSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "FlightVPC"
+                },
+                "CidrBlock": "10.75.0.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "-subnet"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "FlightGW": {
+            "Type": "AWS::EC2::InternetGateway",
+            "DependsOn": "FlightVPC"
+        },
+        "FlightGWAttach": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "DependsOn": "FlightVPC",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "FlightVPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "FlightGW"
+                }
+            }
+        },
+        "FlightRoute": {
+            "Type": "AWS::EC2::Route",
+            "DependsOn": "FlightGWAttach",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "FlightRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "FlightGW"
+                }
+            }
+        },
+        "SubnetToRouteTable": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "DependsOn": "FlightRouteTable",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "FlightSubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "FlightRouteTable"
+                }
+            }
+        },
+        "FlightSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "AWS::StackName"
+                        }
+                    }
+                ],
+                "GroupDescription": "Enable SSH access to the Alces Clusterware master node",
+                "VpcId": {
+                    "Ref": "FlightVPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "-1",
+                        "FromPort": "0",
+                        "ToPort": "65535",
+                        "CidrIp": "10.75.0.0/24"
+                    },
+                    {
+                        "IpProtocol": "6",
+                        "FromPort": "5900",
+                        "ToPort": "5920",
+                        "CidrIp": {
+                            "Ref": "NetworkCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "6",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": {
+                            "Ref": "NetworkCIDR"
+                        }
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "FromPort": "0",
+                        "ToPort": "65535",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "MasterIAM": {
+            "Condition":  "UseAlarms",
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "MasterIAMProfile": {
+            "Condition":  "UseAlarms",
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "MasterIAM"
+                    }
+                ]
+            }
+        },
+        "MetricData": {
+            "Condition":  "UseAlarms",
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "MetricData",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "cloudwatch:PutMetricData",
+                                "autoscaling:DescribeAutoScalingGroups",
+                                "autoscaling:SetDesiredCapacity",
+                                "autoscaling:UpdateAutoScalingGroup",
+                                "autoscaling:SetInstanceProtection"
+                            ],
+                            "Resource": [
+                                "*"
+                            ]
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "MasterIAM"
+                    }
+                ]
+            }
+        },
+        "FlightLogin": {
+            "Type": "AWS::EC2::Instance",
+            "DependsOn": "FlightGWAttach",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "-login1"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "IamInstanceProfile": {
+                    "Fn::If": [
+                        "UseAlarms",
+                        {
+                            "Ref": "MasterIAMProfile"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSRegionArch2AMI",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "centos7"
+                    ]
+                },
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "True",
+                        "DeviceIndex": "0",
+                        "GroupSet": [
+                            {
+                                "Ref": "FlightSG"
+                            }
+                        ],
+                        "SubnetId": {
+                            "Ref": "FlightSubnet"
+                        }
+                    }
+                ],
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": {
+			        "Ref": "LoginSystemDiskSize"
+                            }
+                        }
+                    },
+                    {
+                        "DeviceName": "/dev/xvdb",
+                        "VirtualName": "ephemeral0"
+                    },
+                    {
+                        "DeviceName": "/dev/xvdc",
+                        "VirtualName": "ephemeral1"
+                    }
+                ],
+                "InstanceType": {
+                    "Fn::FindInMap": [ "FlightTypeToInstanceType", { "Ref": "LoginType" }, "InstanceType" ]
+                },
+                "KeyName": {
+                    "Ref": "KeyPair"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#cloud-config",
+                                "\n",
+                                "system_info:",
+                                "\n",
+                                "  default_user:",
+                                "\n",
+                                "    name: ",
+                                {
+                                    "Ref": "Username"
+                                },
+                                "\n",
+                                "hostname: login1",
+                                "\n",
+                                "write_files:",
+                                "\n",
+                                "- content: |",
+                                "\n",
+                                "    cluster:",
+                                "\n",
+                                "      uuid: '11111111-2222-3333-444444444444'",
+                                "\n",
+                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='",
+                                "\n",
+                                "      name: ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "\n",
+                                "      role: 'master'",
+                                "\n",
+                                "      tags:",
+                                "\n",
+                                "        scheduler_roles: ':master:'",
+                                "\n",
+                                "        storage_roles: ':master:'",
+                                "\n",
+                                "        access_roles: ':master:'",
+                                "\n",
+                                "  owner: root:root",
+                                "\n",
+                                "  path: /opt/clusterware/etc/config.yml",
+                                "\n",
+                                "  permissions: '0640'"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "ComputeConfig": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "AssociatePublicIpAddress": "True",
+                "KeyName": {
+                    "Ref": "KeyPair"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSRegionArch2AMI",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "centos7"
+                    ]
+                },
+		"IamInstanceProfile": {
+                    "Fn::If": [
+                        "UseAlarms",
+                        {
+                            "Ref": "MasterIAMProfile"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "InstanceType": {
+                     "Fn::FindInMap": [ "FlightTypeToInstanceType", { "Ref": "ComputeType" }, "InstanceType" ]
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": "20"
+                        }
+                    }
+                ],
+                "SpotPrice": {
+                    "Fn::If": [
+                        "UseSpotCompute",
+                        {
+                            "Ref": "ComputeSpotPrice"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "FlightSG"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#cloud-config",
+                                "\n",
+                                "system_info:",
+                                "\n",
+                                "  default_user:",
+                                "\n",
+                                "    name: ",
+                                {
+                                    "Ref": "Username"
+                                },
+                                "\n",
+                                "write_files:",
+                                "\n",
+                                "- content: |",
+                                "\n",
+                                "    cluster:",
+                                "\n",
+                                "      uuid: '11111111-2222-3333-444444444444'",
+                                "\n",
+                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='",
+                                "\n",
+                                "      name: ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "\n",
+                                "      role: 'slave'",
+                                "\n",
+                                "      master: ",
+                                {
+                                    "Fn::GetAtt": [
+                                        "FlightLogin",
+                                        "PrivateIp"
+                                    ]
+                                },
+                                "\n",
+                                "      tags:",
+                                "\n",
+                                "        scheduler_roles: ':compute:'",
+                                "\n",
+                                "  owner: root:root",
+                                "\n",
+                                "  path: /opt/clusterware/etc/config.yml",
+                                "\n",
+                                "  permissions: '0640'",
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "PlacementGroup": {
+            "Type": "AWS::EC2::PlacementGroup",
+            "Properties": {
+                "Strategy": "cluster"
+            }
+        },
+        "FlightCompute": {
+              "Type": "AWS::AutoScaling::AutoScalingGroup",
+              "DependsOn": "FlightLogin",
+              "Properties": {
+                  "DesiredCapacity": {
+                    "Fn::If": [
+                        "UseAlarms",
+                        {
+                            "Ref": "InitialNodes"
+                        },
+                        "8"
+                    ]
+                  },
+                  "LaunchConfigurationName": {
+                      "Ref": "ComputeConfig"
+                  },
+                  "PlacementGroup": {
+                      "Ref": "PlacementGroup"
+                  },
+                  "Tags": [
+                      {
+                          "Key": "Name",
+                          "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "-compute"
+                                ]
+                            ]
+                        },
+                        "PropagateAtLaunch": "true"
+                      }
+                  ],
+                  "MinSize": "1",
+                  "MaxSize": { "Ref": "MaxNodes" },
+                  "VPCZoneIdentifier": [
+                    {
+                        "Ref": "FlightSubnet"
+                    }
+                  ]
+              }
+        },
+        "ScaleUp": {
+              "Condition":  "UseAlarms",
+              "Type": "AWS::AutoScaling::ScalingPolicy",
+              "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "FlightCompute"
+                },
+                "Cooldown": "300",
+                "ScalingAdjustment": "4"
+              }
+        },
+        "CPUAlarmHigh": {
+              "Condition":  "UseAlarms",
+              "Type": "AWS::CloudWatch::Alarm",
+              "Properties": {
+                "AlarmDescription": "Scale-up if currently queued jobs exceeds limit",
+                "MetricName": "JobStatus_qw",
+                "Namespace": "ALCES-SGE",
+                "Statistic": "Average",
+                "Period": "60",
+                "EvaluationPeriods": "3",
+                "Threshold": "0",
+                "AlarmActions": [
+                    {
+                        "Ref": "ScaleUp"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "FlightCompute"
+                        }
+                    }
+                ],
+                "ComparisonOperator": "GreaterThanThreshold"
+              }
+        }
+    },
+    "Outputs": {
+          "Username": {
+            "Description": "Administrator username used to log in to your environment with. This should be used in conjunction with your selected AWS keypair - together with the provided access IP",
+            "Value": {
+                "Ref": "Username"
+            }
+          },
+          "AccessIP": {
+            "Description": "Public access IP for your Flight Compute environment. Use together with your chosen username to gain SSH access",
+            "Value": {
+                "Fn::GetAtt": [
+                    "FlightLogin",
+                    "PublicIp"
+                ]
+            }
+          }
+    }
+}
