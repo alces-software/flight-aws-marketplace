@@ -22,9 +22,8 @@
         "ComputeType": {
             "Description": "Select the compute node instance type to deploy - this defines the number of cores and memory available",
             "Type": "String",
-            "Default": "t2.large",
+            "Default": "c4.large",
             "AllowedValues": [
-                "t2.large",
                 "c4.large",
                 "c3.2xlarge",
                 "c4.8xlarge"
