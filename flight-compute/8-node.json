@@ -55,11 +55,11 @@
         "LoginType": {
             "Description": "Select the login node instance type to deploy - this defines the number of cores and memory available",
             "Type": "String",
-            "Default": "t2.large",
+            "Default": "small-t2.large",
             "AllowedValues": [
-                "t2.large",
-                "c3.large",
-                "c4.large"
+                "small-t2.large",
+                "medium-r3.2xlarge",
+                "large-c4.8xlarge"
             ]
         },
         "NetworkCIDR": {
@@ -117,7 +117,10 @@
           "memory.dedicated-r3.8xlarge": { "InstanceType": "r3.8xlarge" },
           "gpu.medium-g2.2xlarge": { "InstanceType": "g2.2xlarge" },
           "gpu.large-cg1.4xlarge": { "InstanceType": "cg1.4xlarge" },
-          "gpu.dedicated-g2.8xlarge": { "InstanceType": "g2.8xlarge" }
+          "gpu.dedicated-g2.8xlarge": { "InstanceType": "g2.8xlarge" },
+          "small-t2.large": { "InstanceType": "t2.large" },
+          "medium-r3.2xlarge": { "InstanceType": "r3.2xlarge" },
+          "large-c4.8xlarge": { "InstanceType": "c4.8xlarge" }
         }
     },
     "Resources": {
@@ -405,7 +408,7 @@
                     }
                 ],
                 "InstanceType": {
-                    "Ref": "LoginType"
+                    "Fn::FindInMap": [ "FlightTypeToInstanceType", { "Ref": "LoginType" }, "InstanceType" ]
                 },
                 "KeyName": {
                     "Ref": "KeyPair"
