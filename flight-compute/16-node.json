@@ -621,7 +621,7 @@
                       }
                   ],
                   "MinSize": "1",
-                  "MaxSize": "8",
+                  "MaxSize": "16",
                   "VPCZoneIdentifier": [
                     {
                         "Ref": "FlightSubnet"
