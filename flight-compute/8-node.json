@@ -32,7 +32,8 @@
         "InitialNodes": {
             "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
             "Type": "Number",
-            "Default": "0" 
+            "Default": "0",
+            "MaxValue": "8"
         },
         "LoginSystemDiskSize": {
             "Description": "Enter the size in GB of shared system disk to deploy. This defines the amount of shared user storage and application storage available",
