@@ -93,7 +93,19 @@
                     ]
                 }
             ]
-        }
+        },
+	"LoginUsePlacement": {
+	    "Fn::Not": [
+		{
+		    "Fn::Equals": [
+			{
+			    "Ref": "LoginType"
+			},
+			"small-t2.large"
+		    ]
+		}
+	    ]
+	}
     },
     "Mappings": {
         "AWSRegionArch2AMI": {
@@ -424,6 +436,17 @@
                         }
                     ]
                 },
+		"PlacementGroupName": {
+                    "Fn::If": [
+			"LoginUsePlacement",
+			{
+			    "Ref": "PlacementGroup"
+			},
+			{
+			    "Ref": "AWS::NoValue"
+			}
+		    ]
+		},
                 "ImageId": {
                     "Fn::FindInMap": [
                         "AWSRegionArch2AMI",

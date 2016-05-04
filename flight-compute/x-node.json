@@ -99,6 +99,18 @@
                     ]
                 }
             ]
+        },
+        "LoginUsePlacement": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoginType"
+                        },
+                        "small-t2.large"
+                    ]
+                }
+            ]
         }
     },
     "Mappings": {
@@ -364,6 +376,17 @@
                         "UseAlarms",
                         {
                             "Ref": "MasterIAMProfile"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "PlacementGroupName": {
+                    "Fn::If": [
+                        "LoginUsePlacement",
+                        {
+                            "Ref": "PlacementGroup"
                         },
                         {
                             "Ref": "AWS::NoValue"
