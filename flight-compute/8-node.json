@@ -98,7 +98,7 @@
     "Mappings": {
         "AWSRegionArch2AMI": {
             "eu-west-1": {
-                "centos7": "ami-0e43ca7d"
+                "centos7": "ami-fb991188"
             }
         },
         "FlightTypeToInstanceType": {
