@@ -1,18 +1,24 @@
 #Flight AWS Marketplace Templates
-##8-node cluster 
+##8-node cluster
 
-This template creates an 8-node HPC environment, either in an existing user-created network or optionally in an entirely separate cluster network. The template starts with 8 dedicated compute hosts - each with 2 cores and 4GB memory; which is set to automatically scale up and down based on the HPC scheduler load. 
+This template creates up to an 8-node HPC environment using the Alces Flight Compute appliance for Linux - together with a private cluster network. The template allows you to start with an optional number of compute nodes, ranging from 1 up to the maximum 8 nodes. Compute nodes have a wide range of popular compute instance types available including; compute optimised, memory optimised and GPU enabled instance types. The compute nodes automatically scale up and down based on the cluster scheduler load - this feature can be disabled if preferred.
 
-The user is also able to choose a login node instance type, defining the number of cores and memory available to the instance. 
+The user is also able to choose a login node instance type, defining the number of cores and memory available to the instance.
 
 ##16-node cluster
 
-This template creates a 16-node HPC environment, either in an existing user-created network or optionally in an entirely separate cluster network. The template starts with 16 dedicated compute hosts - each with 16 Ivy-Bridge cores and 16GB memory; which is set to automatically scale up and down based on the HPC scheduler load. 
+This template creates up to an 16-node HPC environment using the Alces Flight Compute appliance for Linux - together with a private cluster network. The template allows you to start with an optional number of compute nodes, ranging from 1 up to the maximum 16 nodes. Compute nodes have a wide range of popular compute instance types available including; compute optimised, memory optimised and GPU enabled instance types. The compute nodes automatically scale up and down based on the cluster scheduler load - this feature can be disabled if preferred.
 
-The user is also able to choose a login node instance type, defining the number of cores and memory available to the instance. As well as defining a login node instance type - the user is able to specify the default root system disk size for each of the deployed instances. 
+The user is also able to choose a login node instance type, defining the number of cores and memory available to the instance.
 
 ##32-node cluster
 
-This template creates a 32-node HPC environment, either in an existing user-created network or optionally in an entirely separate cluster network. The template starts with 32 dedicated compute hosts - each with 32 Haswell cores and 60GB memory; which is set to automatically scale up and down based on the HPC scheduler load. 
+This template creates up to an 32-node HPC environment using the Alces Flight Compute appliance for Linux - together with a private cluster network. The template allows you to start with an optional number of compute nodes, ranging from 1 up to the maximum 22 nodes. Compute nodes have a wide range of popular compute instance types available including; compute optimised, memory optimised and GPU enabled instance types. The compute nodes automatically scale up and down based on the cluster scheduler load - this feature can be disabled if preferred.
 
-The user is also able to choose a login node instance type, defining the number of cores and memory available to the instance. As well as defining a login node instance type - the user is able to specify the default root system disk size for each of the deployed instances. 
+The user is also able to choose a login node instance type, defining the number of cores and memory available to the instance.
+
+##X-node cluster
+
+This template creates a HPC environment using the Alces Flight Compute appliance for Linux with an optional number of compute nodes up to the maximum of 32. Compute nodes have a wide range of popular compute instance types available including; compute optimised, memory optimised and GPU enabled instance types. The compute nodes automatically scale up and down based on the cluster scheduler load - this feature can be disabled if preferred.
+
+The user is also able to choose a login node instance type, defining the number of cores and memory available to the instance.
