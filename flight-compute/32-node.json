@@ -94,23 +94,23 @@
                 }
             ]
         },
-        "LoginUsePlacement": {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "LoginType"
-                        },
-                        "small-t2.large"
-                    ]
-                }
-            ]
-        }
+	"LoginUsePlacement": {
+	    "Fn::Not": [
+		{
+		    "Fn::Equals": [
+			{
+			    "Ref": "LoginType"
+			},
+			"small-t2.large"
+		    ]
+		}
+	    ]
+	}
     },
     "Mappings": {
         "AWSRegionArch2AMI": {
             "eu-west-1": {
-                "centos7": "ami-0e43ca7d"
+                "centos7": "ami-fb991188"
             }
         },
         "FlightTypeToInstanceType": {
@@ -315,11 +315,11 @@
                 ]
             }
         },
-        "MetricData": {
+        "MasterPermissions": {
             "Condition":  "UseAlarms",
             "Type": "AWS::IAM::Policy",
             "Properties": {
-                "PolicyName": "MetricData",
+                "PolicyName": "MasterPermissions",
                 "PolicyDocument": {
                     "Version": "2012-10-17",
                     "Statement": [
@@ -330,7 +330,8 @@
                                 "autoscaling:DescribeAutoScalingGroups",
                                 "autoscaling:SetDesiredCapacity",
                                 "autoscaling:UpdateAutoScalingGroup",
-                                "autoscaling:SetInstanceProtection"
+                                "autoscaling:SetInstanceProtection",
+				"autoscaling:TerminateInstanceInAutoScalingGroup"
                             ],
                             "Resource": [
                                 "*"
@@ -341,6 +342,65 @@
                 "Roles": [
                     {
                         "Ref": "MasterIAM"
+                    }
+                ]
+            }
+        },
+        "ComputeIAM": {
+            "Condition":  "UseAlarms",
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "ComputeIAMProfile": {
+            "Condition":  "UseAlarms",
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "ComputeIAM"
+                    }
+                ]
+            }
+        },
+        "ComputePermissions": {
+            "Condition":  "UseAlarms",
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "ComputePermissions",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "autoscaling:DescribeAutoScalingGroups"
+                            ],
+                            "Resource": [
+                                "*"
+                            ]
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "ComputeIAM"
                     }
                 ]
             }
@@ -376,17 +436,17 @@
                         }
                     ]
                 },
-                "PlacementGroupName": {
+		"PlacementGroupName": {
                     "Fn::If": [
-                        "LoginUsePlacement",
-                        {
-                            "Ref": "PlacementGroup"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                },
+			"LoginUsePlacement",
+			{
+			    "Ref": "PlacementGroup"
+			},
+			{
+			    "Ref": "AWS::NoValue"
+			}
+		    ]
+		},
                 "ImageId": {
                     "Fn::FindInMap": [
                         "AWSRegionArch2AMI",
@@ -508,7 +568,7 @@
                     "Fn::If": [
                         "UseAlarms",
                         {
-                            "Ref": "MasterIAMProfile"
+                            "Ref": "ComputeIAMProfile"
                         },
                         {
                             "Ref": "AWS::NoValue"
