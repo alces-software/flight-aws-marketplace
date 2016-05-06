@@ -1,4 +1,4 @@
---- 8-node.json	2016-05-04 13:38:43.000000000 +0100
+--- 32-node.json	2016-05-04 13:38:43.000000000 +0100
 +++ 32-node.json	2016-05-04 13:46:00.000000000 +0100
 @@ -44,7 +44,7 @@
              "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
