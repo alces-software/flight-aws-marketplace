@@ -515,6 +515,7 @@
                                 "        scheduler_roles: ':master:'\n",
                                 "        storage_roles: ':master:'\n",
                                 "        access_roles: ':master:'\n",
+				"        ",{ "Fn::If": ["UseAlarms", "autoscaling: enabled\n", "autoscaling: disabled\n" ] },
                                 "  owner: root:root\n",
                                 "  path: /opt/clusterware/etc/config.yml\n",
                                 "  permissions: '0640'\n"
