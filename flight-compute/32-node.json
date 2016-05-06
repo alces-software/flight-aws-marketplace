@@ -110,7 +110,7 @@
     "Mappings": {
         "AWSRegionArch2AMI": {
             "eu-west-1": {
-                "centos7": "ami-fb991188"
+                "centos7": "ami-998e05ea"
             }
         },
         "FlightTypeToInstanceType": {
@@ -499,49 +499,26 @@
                         "Fn::Join": [
                             "",
                             [
-                                "#cloud-config",
-                                "\n",
-                                "system_info:",
-                                "\n",
-                                "  default_user:",
-                                "\n",
-                                "    name: ",
-                                {
-                                    "Ref": "Username"
-                                },
-                                "\n",
-                                "hostname: login1",
-                                "\n",
-                                "write_files:",
-                                "\n",
-                                "- content: |",
-                                "\n",
-                                "    cluster:",
-                                "\n",
-                                "      uuid: '11111111-2222-3333-444444444444'",
-                                "\n",
-                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='",
-                                "\n",
-                                "      name: ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                "\n",
-                                "      role: 'master'",
-                                "\n",
-                                "      tags:",
-                                "\n",
-                                "        scheduler_roles: ':master:'",
-                                "\n",
-                                "        storage_roles: ':master:'",
-                                "\n",
-                                "        access_roles: ':master:'",
-                                "\n",
-                                "  owner: root:root",
-                                "\n",
-                                "  path: /opt/clusterware/etc/config.yml",
-                                "\n",
-                                "  permissions: '0640'"
+                                "#cloud-config\n",
+                                "system_info:\n",
+                                "  default_user:\n",
+                                "    name: ", { "Ref": "Username" }, "\n",
+                                "hostname: login1\n",
+                                "write_files:\n",
+                                "- content: |\n",
+                                "    cluster:\n",
+                                "      uuid: '11111111-2222-3333-444444444444'\n",
+                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='\n",
+                                "      name: ", { "Ref": "AWS::StackName" }, "\n",
+                                "      role: 'master'\n",
+                                "      tags:\n",
+                                "        scheduler_roles: ':master:'\n",
+                                "        storage_roles: ':master:'\n",
+                                "        access_roles: ':master:'\n",
+				"        ",{ "Fn::If": ["UseAlarms", "autoscaling: enabled\n", "autoscaling: disabled\n" ] },
+                                "  owner: root:root\n",
+                                "  path: /opt/clusterware/etc/config.yml\n",
+                                "  permissions: '0640'\n"
                             ]
                         ]
                     }
@@ -607,52 +584,23 @@
                         "Fn::Join": [
                             "",
                             [
-                                "#cloud-config",
-                                "\n",
-                                "system_info:",
-                                "\n",
-                                "  default_user:",
-                                "\n",
-                                "    name: ",
-                                {
-                                    "Ref": "Username"
-                                },
-                                "\n",
-                                "write_files:",
-                                "\n",
-                                "- content: |",
-                                "\n",
-                                "    cluster:",
-                                "\n",
-                                "      uuid: '11111111-2222-3333-444444444444'",
-                                "\n",
-                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='",
-                                "\n",
-                                "      name: ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                "\n",
-                                "      role: 'slave'",
-                                "\n",
-                                "      master: ",
-                                {
-                                    "Fn::GetAtt": [
-                                        "FlightLogin",
-                                        "PrivateIp"
-                                    ]
-                                },
-                                "\n",
-                                "      tags:",
-                                "\n",
-                                "        scheduler_roles: ':compute:'",
-                                "\n",
-                                "  owner: root:root",
-                                "\n",
-                                "  path: /opt/clusterware/etc/config.yml",
-                                "\n",
-                                "  permissions: '0640'",
-                                "\n"
+                                "#cloud-config\n",
+                                "system_info:\n",
+                                "  default_user:\n",
+                                "    name: ", { "Ref": "Username" }, "\n",
+                                "write_files:\n",
+                                "- content: |\n",
+                                "    cluster:\n",
+                                "      uuid: '11111111-2222-3333-444444444444'\n",
+                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='\n",
+                                "      name: ", { "Ref": "AWS::StackName" }, "\n",
+                                "      role: 'slave'\n",
+                                "      master: ", { "Fn::GetAtt": [ "FlightLogin", "PrivateIp" ] }, "\n",
+                                "      tags:\n",
+                                "        scheduler_roles: ':compute:'\n",
+                                "  owner: root:root\n",
+                                "  path: /opt/clusterware/etc/config.yml\n",
+                                "  permissions: '0640'\n"
                             ]
                         ]
                     }
