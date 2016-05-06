@@ -502,7 +502,7 @@
                                 "#cloud-config\n",
                                 "system_info:\n",
                                 "  default_user:\n",
-                                "    name: "\n, { "Ref": "Username" }, "\n",
+                                "    name: ", { "Ref": "Username" }, "\n",
                                 "hostname: login1\n",
                                 "write_files:\n",
                                 "- content: |\n",
