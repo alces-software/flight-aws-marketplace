@@ -107,10 +107,34 @@
 	}
     },
     "Mappings": {
-        "AWSRegionArch2AMI": {
-            "eu-west-1": {
-                "centos7": "ami-ca50dbb9"
-            }
+        "AWSRegionArch2AMI" : {
+            "us-east-1"      : { "HVM64" : "NOT_SUPPORTED" },
+            "us-west-2"      : { "HVM64" : "NOT_SUPPORTED" },
+            "us-west-1"      : { "HVM64" : "NOT_SUPPORTED" },
+            "eu-west-1"      : { "HVM64" : "ami-ca50dbb9" },
+            "ap-southeast-1" : { "HVM64" : "NOT_SUPPORTED" },
+            "ap-northeast-1" : { "HVM64" : "NOT_SUPPORTED" },
+            "ap-southeast-2" : { "HVM64" : "NOT_SUPPORTED" },
+            "sa-east-1"      : { "HVM64" : "NOT_SUPPORTED" },
+            "cn-north-1"     : { "HVM64" : "NOT_SUPPORTED" },
+            "eu-central-1"   : { "HVM64" : "NOT_SUPPORTED" }
+        },
+        "AWSInstanceType2Arch" : {
+            "t2.large"    : { "Arch" : "HVM64" },
+            "m2.xlarge"   : { "Arch" : "HVM64" },
+            "m3.2xlarge"  : { "Arch" : "HVM64" },
+            "m4.4xlarge"  : { "Arch" : "HVM64" },
+            "m4.10xlarge" : { "Arch" : "HVM64" },
+            "r3.xlarge"   : { "Arch" : "HVM64" },
+            "r3.2xlarge"  : { "Arch" : "HVM64" },
+            "r3.4xlarge"  : { "Arch" : "HVM64" },
+            "r3.8xlarge"  : { "Arch" : "HVM64" },
+            "g2.2xlarge"  : { "Arch" : "HVM64" },
+            "g2.8xlarge"  : { "Arch" : "HVM64" },
+            "c4.8xlarge"  : { "Arch" : "HVM64" },
+            "c4.large"    : { "Arch" : "HVM64" },
+            "c4.2xlarge"  : { "Arch" : "HVM64" },
+            "c4.4xlarge"  : { "Arch" : "HVM64" }
         },
         "FlightTypeToInstanceType": {
           "compute.small-c4.large": { "InstanceType": "c4.large" },
@@ -447,13 +471,7 @@
 		    ]
 		},
                 "ImageId": {
-                    "Fn::FindInMap": [
-                        "AWSRegionArch2AMI",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "centos7"
-                    ]
+                    "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Fn::FindInMap": [ "FlightTypeToInstanceType", { "Ref": "LoginType" }, "InstanceType" ] }, "Arch" ] } ]
                 },
                 "NetworkInterfaces": [
                     {
@@ -532,13 +550,7 @@
                     "Ref": "KeyPair"
                 },
                 "ImageId": {
-                    "Fn::FindInMap": [
-                        "AWSRegionArch2AMI",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "centos7"
-                    ]
+                    "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Fn::FindInMap": [ "FlightTypeToInstanceType", { "Ref": "ComputeType" }, "InstanceType" ] }, "Arch" ] } ]
                 },
 		"IamInstanceProfile": {
                     "Fn::If": [
