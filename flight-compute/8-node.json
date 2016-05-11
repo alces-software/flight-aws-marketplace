@@ -104,14 +104,30 @@
 		    ]
 		}
 	    ]
-	}
+	},
+        "HasFlightBucket": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Fn::FindInMap": [
+                                "StaticValues",
+                                "FlightBucket",
+                                "Value"
+                            ]
+                        },
+                        ""
+                    ]
+                }
+            ]
+        }
     },
     "Mappings": {
         "AWSRegionArch2AMI" : {
             "us-east-1"      : { "HVM64" : "NOT_SUPPORTED" },
             "us-west-2"      : { "HVM64" : "NOT_SUPPORTED" },
             "us-west-1"      : { "HVM64" : "NOT_SUPPORTED" },
-            "eu-west-1"      : { "HVM64" : "ami-ca50dbb9" },
+            "eu-west-1"      : { "HVM64" : "ami-860983f5" },
             "ap-southeast-1" : { "HVM64" : "NOT_SUPPORTED" },
             "ap-northeast-1" : { "HVM64" : "NOT_SUPPORTED" },
             "ap-southeast-2" : { "HVM64" : "NOT_SUPPORTED" },
@@ -154,6 +170,9 @@
           "small-t2.large": { "InstanceType": "t2.large" },
           "medium-r3.2xlarge": { "InstanceType": "r3.2xlarge" },
           "large-c4.8xlarge": { "InstanceType": "c4.8xlarge" }
+        },
+        "StaticValues": {
+            "FlightBucket": { "Value": "" }
         }
     },
     "Resources": {
@@ -306,7 +325,6 @@
             }
         },
         "MasterIAM": {
-            "Condition":  "UseAlarms",
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "AssumeRolePolicyDocument": {
@@ -327,7 +345,6 @@
             }
         },
         "MasterIAMProfile": {
-            "Condition":  "UseAlarms",
             "Type": "AWS::IAM::InstanceProfile",
             "Properties": {
                 "Path": "/",
@@ -338,11 +355,11 @@
                 ]
             }
         },
-        "MasterPermissions": {
+        "MasterAutoscalingPermissions": {
             "Condition":  "UseAlarms",
             "Type": "AWS::IAM::Policy",
             "Properties": {
-                "PolicyName": "MasterPermissions",
+                "PolicyName": "MasterAutoscalingPermissions",
                 "PolicyDocument": {
                     "Version": "2012-10-17",
                     "Statement": [
@@ -353,8 +370,7 @@
                                 "autoscaling:DescribeAutoScalingGroups",
                                 "autoscaling:SetDesiredCapacity",
                                 "autoscaling:UpdateAutoScalingGroup",
-                                "autoscaling:SetInstanceProtection",
-				"autoscaling:TerminateInstanceInAutoScalingGroup"
+                                "autoscaling:TerminateInstanceInAutoScalingGroup"
                             ],
                             "Resource": [
                                 "*"
@@ -369,8 +385,37 @@
                 ]
             }
         },
+        "MasterBucketPermissions": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "MasterBucketPermissions",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:ListBucket",
+                                "s3:CreateBucket",
+                                "s3:GetObject",
+                                "s3:DeleteObject",
+                                "s3:PutObject"
+                            ],
+                            "Resource": [
+                                "arn:aws:s3:::*.alces-flight.com",
+                                "arn:aws:s3:::*.alces-flight.com/*"
+                            ]
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "MasterIAM"
+                    }
+                ]
+            }
+        },
         "ComputeIAM": {
-            "Condition":  "UseAlarms",
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "AssumeRolePolicyDocument": {
@@ -391,7 +436,6 @@
             }
         },
         "ComputeIAMProfile": {
-            "Condition":  "UseAlarms",
             "Type": "AWS::IAM::InstanceProfile",
             "Properties": {
                 "Path": "/",
@@ -402,11 +446,11 @@
                 ]
             }
         },
-        "ComputePermissions": {
+        "ComputeAutoscalingPermissions": {
             "Condition":  "UseAlarms",
             "Type": "AWS::IAM::Policy",
             "Properties": {
-                "PolicyName": "ComputePermissions",
+                "PolicyName": "ComputeAutoscalingPermissions",
                 "PolicyDocument": {
                     "Version": "2012-10-17",
                     "Statement": [
@@ -417,6 +461,33 @@
                             ],
                             "Resource": [
                                 "*"
+                            ]
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "ComputeIAM"
+                    }
+                ]
+            }
+        },
+        "ComputeBucketPermissions": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "ComputeBucketPermissions",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:ListBucket",
+                                "s3:GetObject"
+                            ],
+                            "Resource": [
+                                "arn:aws:s3:::*.alces-flight.com",
+                                "arn:aws:s3:::*.alces-flight.com/*"
                             ]
                         }
                     ]
@@ -532,7 +603,34 @@
                                 "        scheduler_roles: ':master:'\n",
                                 "        storage_roles: ':master:'\n",
                                 "        access_roles: ':master:'\n",
-				"        ",{ "Fn::If": ["UseAlarms", "autoscaling: enabled\n", "autoscaling: disabled\n" ] },
+                                "      ", {
+                                    "Fn::If": [
+                                        "UseAlarms",
+                                        "autoscaling: enabled\n",
+                                        "autoscaling: disabled\n"
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "HasFlightBucket", {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "      bucket: ",
+                                                    {
+                                                        "Fn::FindInMap": [
+                                                            "StaticValues",
+                                                            "FlightBucket",
+                                                            "Value"
+                                                        ]
+                                                    },
+                                                    "\n"
+                                                ]
+                                            ]
+                                        },
+                                        ""
+                                    ]
+                                },
                                 "  owner: root:root\n",
                                 "  path: /opt/clusterware/etc/config.yml\n",
                                 "  permissions: '0640'\n"
