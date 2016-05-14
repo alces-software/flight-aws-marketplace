@@ -766,7 +766,7 @@
                         {
                             "Ref": "InitialNodes"
                         },
-                        "8"
+                        { "Ref": "MaxNodes" }
                     ]
                   },
                   "LaunchConfigurationName": {

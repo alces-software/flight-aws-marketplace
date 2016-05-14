@@ -760,7 +760,7 @@
                         {
                             "Ref": "InitialNodes"
                         },
-                        "8"
+                        "32"
                     ]
                   },
                   "LaunchConfigurationName": {
