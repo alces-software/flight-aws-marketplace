@@ -1,15 +1,15 @@
---- 16-node.json	2016-05-04 13:38:43.000000000 +0100
-+++ 16-node.json	2016-05-04 13:42:55.000000000 +0100
-@@ -44,7 +44,7 @@
+--- 16-node.json	2016-05-14 11:57:39.000000000 +0100
++++ 16-node.json	2016-05-14 11:58:15.000000000 +0100
+@@ -55,7 +55,7 @@
              "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
              "Type": "Number",
              "Default": "0",
--            "MaxValue": "8"
-+            "MaxValue": "16"
+-            "MaxValue": "8",
++            "MaxValue": "16",
+             "MinValue": "0"
          },
          "LoginSystemDiskSize": {
-             "Description": "Enter the size in GB of shared system disk to deploy. This defines the amount of shared user storage and application storage available",
-@@ -54,7 +54,7 @@
+@@ -66,7 +66,7 @@
          "LoginType": {
              "Description": "Select the login node instance type to deploy - this defines the number of cores and memory available",
              "Type": "String",
@@ -18,7 +18,16 @@
              "AllowedValues": [
                  "small-t2.large",
                  "medium-r3.2xlarge",
-@@ -702,7 +702,7 @@
+@@ -760,7 +760,7 @@
+                         {
+                             "Ref": "InitialNodes"
+                         },
+-                        "8"
++                        "16"
+                     ]
+                   },
+                   "LaunchConfigurationName": {
+@@ -787,7 +787,7 @@
                        }
                    ],
                    "MinSize": "1",
@@ -27,7 +36,7 @@
                    "VPCZoneIdentifier": [
                      {
                          "Ref": "FlightSubnet"
-@@ -719,7 +719,7 @@
+@@ -804,7 +804,7 @@
                      "Ref": "FlightCompute"
                  },
                  "Cooldown": "300",
