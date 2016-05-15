@@ -1,5 +1,5 @@
 {
-    "Description": "Launch an Alces HPC environment with a single SGE master node together with 8 initial compute nodes using EC2 spot.",
+    "Description": "Launch an Alces HPC environment with a single SGE master node together with compute nodes using EC2 spot.",
     "Parameters": {
         "KeyPair": {
             "Description": "Choose an existing AWS key for administrator access",
