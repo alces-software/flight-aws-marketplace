@@ -3,6 +3,13 @@
 - Templates now include support for deploying Alces Flight appliances
 - Templates now output administrator username used to access environment
 - Compute hosts can now optionally be deployed as spot or dedicated instances
+- Many popular EC2 instance types have been added to use with compute hosts
+- Additional cluster login node EC2 instance types have been added
+- Template functionality has been added for use with the Alces customiser tool 
+- Templates can now optionally enable or disable automatic AutoScaling
+- Cluster login node is now automatically added to the cluster Placement Group if applicable 
+- A dedicated area for commercial applications is now available, this can be found at `/opt/apps` and will automatically pick up any created modulefiles
+- Various bug fixes
 
 2016.1:
 - Initial templates for varying Alces Flight compute environment sizes
