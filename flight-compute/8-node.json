@@ -358,7 +358,7 @@
                 },
                 "Path": "/",
                 "Policies": [{
-                    "PolicyName": "root",
+                    "PolicyName": "LambdaExecutionPermissions",
                     "PolicyDocument": {
                         "Version": "2012-10-17",
                         "Statement": [{
