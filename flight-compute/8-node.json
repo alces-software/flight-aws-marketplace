@@ -345,6 +345,63 @@
                 ]
             }
         },
+        "LambdaExecutionIAM": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": {"Service": ["lambda.amazonaws.com"]},
+                        "Action": ["sts:AssumeRole"]
+                    }]
+                },
+                "Path": "/",
+                "Policies": [{
+                    "PolicyName": "root",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": ["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"],
+                            "Resource": "arn:aws:logs:*:*:*"
+                        }]
+                    }
+                }]
+            }
+        },
+        "ClusterIdentityFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "\n", [
+                                "var response = require('cfn-response');",
+                                "exports.handler = function(event, context) {",
+                                "  var responseData = {",
+                                "    Uuid: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {var r = Math.random()*16|0,v=c=='x'?r:r&0x3|0x8;return v.toString(16);}),",
+                                "    Token: Math.random().toString(36).substring(7)",
+                                "  };",
+                                "  response.send(event, context, response.SUCCESS, responseData);",
+                                "};"
+                            ]
+                        ]
+                    }
+                },
+                "Handler": "index.handler",
+                "Runtime": "nodejs",
+                "Timeout": "30",
+                "Role": { "Fn::GetAtt": ["LambdaExecutionIAM", "Arn"] }
+            }
+        },
+        "ClusterIdentity": {
+            "Type": "Custom::ClusterIdentity",
+            "Properties": {
+                "ServiceToken": { "Fn::GetAtt": ["ClusterIdentityFunction", "Arn"] },
+                "Region": { "Ref": "AWS::Region" }
+            }
+        },
         "MasterIAM": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -629,8 +686,8 @@
                                 "write_files:\n",
                                 "- content: |\n",
                                 "    cluster:\n",
-                                "      uuid: '11111111-2222-3333-444444444444'\n",
-                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='\n",
+                                "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
+                                "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n",
                                 "      name: '", { "Ref": "AWS::StackName" }, "'\n",
                                 "      role: 'master'\n",
                                 "      tags:\n",
@@ -726,8 +783,8 @@
                                 "write_files:\n",
                                 "- content: |\n",
                                 "    cluster:\n",
-                                "      uuid: '11111111-2222-3333-444444444444'\n",
-                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='\n",
+                                "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
+                                "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n",
                                 "      name: '", { "Ref": "AWS::StackName" }, "'\n",
                                 "      role: 'slave'\n",
                                 "      master: ", { "Fn::GetAtt": [ "FlightLogin", "PrivateIp" ] }, "\n",
