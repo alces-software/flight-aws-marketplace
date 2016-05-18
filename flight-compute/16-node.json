@@ -148,16 +148,16 @@
     },
     "Mappings": {
         "AWSRegionArch2AMI" : {
-            "us-east-1"      : { "HVM64" : "NOT_SUPPORTED" },
-            "us-west-2"      : { "HVM64" : "NOT_SUPPORTED" },
-            "us-west-1"      : { "HVM64" : "NOT_SUPPORTED" },
-            "eu-west-1"      : { "HVM64" : "ami-21bf2b52" },
-            "ap-southeast-1" : { "HVM64" : "NOT_SUPPORTED" },
-            "ap-northeast-1" : { "HVM64" : "NOT_SUPPORTED" },
-            "ap-southeast-2" : { "HVM64" : "NOT_SUPPORTED" },
-            "sa-east-1"      : { "HVM64" : "NOT_SUPPORTED" },
+            "us-east-1"      : { "HVM64" : "ami-621bf00f" },
+            "us-west-2"      : { "HVM64" : "ami-3d86795d" },
+            "us-west-1"      : { "HVM64" : "ami-d5a9d1b5" },
+            "eu-west-1"      : { "HVM64" : "ami-73c55200" },
+            "ap-southeast-1" : { "HVM64" : "ami-05429466" },
+            "ap-northeast-1" : { "HVM64" : "ami-59668738" },
+            "ap-southeast-2" : { "HVM64" : "ami-4d06292e" },
+            "sa-east-1"      : { "HVM64" : "ami-6f68e003" },
             "cn-north-1"     : { "HVM64" : "NOT_SUPPORTED" },
-            "eu-central-1"   : { "HVM64" : "NOT_SUPPORTED" }
+            "eu-central-1"   : { "HVM64" : "ami-d4cb27bb" }
         },
         "AWSInstanceType2Arch" : {
             "t2.large"    : { "Arch" : "HVM64" },
@@ -343,6 +343,63 @@
                         "CidrIp": "0.0.0.0/0"
                     }
                 ]
+            }
+        },
+        "LambdaExecutionIAM": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": {"Service": ["lambda.amazonaws.com"]},
+                        "Action": ["sts:AssumeRole"]
+                    }]
+                },
+                "Path": "/",
+                "Policies": [{
+                    "PolicyName": "LambdaExecutionPermissions",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": ["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"],
+                            "Resource": "arn:aws:logs:*:*:*"
+                        }]
+                    }
+                }]
+            }
+        },
+        "ClusterIdentityFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "\n", [
+                                "var response = require('cfn-response');",
+                                "exports.handler = function(event, context) {",
+                                "  var responseData = {",
+                                "    Uuid: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {var r = Math.random()*16|0,v=c=='x'?r:r&0x3|0x8;return v.toString(16);}),",
+                                "    Token: Math.random().toString(36).substring(7)",
+                                "  };",
+                                "  response.send(event, context, response.SUCCESS, responseData);",
+                                "};"
+                            ]
+                        ]
+                    }
+                },
+                "Handler": "index.handler",
+                "Runtime": "nodejs",
+                "Timeout": "30",
+                "Role": { "Fn::GetAtt": ["LambdaExecutionIAM", "Arn"] }
+            }
+        },
+        "ClusterIdentity": {
+            "Type": "Custom::ClusterIdentity",
+            "Properties": {
+                "ServiceToken": { "Fn::GetAtt": ["ClusterIdentityFunction", "Arn"] },
+                "Region": { "Ref": "AWS::Region" }
             }
         },
         "MasterIAM": {
@@ -629,8 +686,8 @@
                                 "write_files:\n",
                                 "- content: |\n",
                                 "    cluster:\n",
-                                "      uuid: '11111111-2222-3333-444444444444'\n",
-                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='\n",
+                                "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
+                                "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n",
                                 "      name: '", { "Ref": "AWS::StackName" }, "'\n",
                                 "      role: 'master'\n",
                                 "      tags:\n",
@@ -726,8 +783,8 @@
                                 "write_files:\n",
                                 "- content: |\n",
                                 "    cluster:\n",
-                                "      uuid: '11111111-2222-3333-444444444444'\n",
-                                "      token: '1A0a1aaAA1aAAA/aaa1aAA=='\n",
+                                "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
+                                "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n",
                                 "      name: '", { "Ref": "AWS::StackName" }, "'\n",
                                 "      role: 'slave'\n",
                                 "      master: ", { "Fn::GetAtt": [ "FlightLogin", "PrivateIp" ] }, "\n",
