@@ -79,6 +79,19 @@
         }
     },
     "Conditions": {
+        "UseLambda": {
+            "Fn::Equals": [
+                {
+                    "Fn::FindInMap": [
+                        "AWSRegionFeatures", {
+                            "Ref" : "AWS::Region"
+                        },
+                        "Lambda"
+                    ]
+                },
+                "true"
+            ]
+        },
         "UseSpotCompute": {
             "Fn::Not": [
                 {
@@ -158,6 +171,18 @@
             "sa-east-1"      : { "HVM64" : "ami-6f68e003" },
             "cn-north-1"     : { "HVM64" : "NOT_SUPPORTED" },
             "eu-central-1"   : { "HVM64" : "ami-d4cb27bb" }
+        },
+        "AWSRegionFeatures" : {
+            "us-east-1"      : { "Lambda" : "true" },
+            "us-west-2"      : { "Lambda" : "true" },
+            "us-west-1"      : { "Lambda" : "false" },
+            "eu-west-1"      : { "Lambda" : "true" },
+            "ap-southeast-1" : { "Lambda" : "false" },
+            "ap-northeast-1" : { "Lambda" : "true" },
+            "ap-southeast-2" : { "Lambda" : "false" },
+            "sa-east-1"      : { "Lambda" : "false" },
+            "cn-north-1"     : { "Lambda" : "false" },
+            "eu-central-1"   : { "Lambda" : "true" }
         },
         "AWSInstanceType2Arch" : {
             "t2.large"    : { "Arch" : "HVM64" },
@@ -346,6 +371,7 @@
             }
         },
         "LambdaExecutionIAM": {
+            "Condition":  "UseLambda",
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "AssumeRolePolicyDocument": {
@@ -371,6 +397,7 @@
             }
         },
         "ClusterIdentityFunction": {
+            "Condition":  "UseLambda",
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Code": {
@@ -396,6 +423,7 @@
             }
         },
         "ClusterIdentity": {
+            "Condition":  "UseLambda",
             "Type": "Custom::ClusterIdentity",
             "Properties": {
                 "ServiceToken": { "Fn::GetAtt": ["ClusterIdentityFunction", "Arn"] },
@@ -685,9 +713,27 @@
                                 "hostname: login1\n",
                                 "write_files:\n",
                                 "- content: |\n",
-                                "    cluster:\n",
-                                "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
-                                "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n",
+                                "    cluster:\n", {
+                                    "Fn::If": [
+                                        "UseLambda", {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
+                                                    "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n"
+                                                ]
+                                            ]
+                                        }, {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "      uuid: '", { "Fn::GetAtt": [ "FlightSG", "GroupId" ] }, "'\n",
+                                                    "      token: '", { "Fn::GetAtt": [ "FlightSG", "GroupId" ] }, "'\n"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                },
                                 "      name: '", { "Ref": "AWS::StackName" }, "'\n",
                                 "      role: 'master'\n",
                                 "      tags:\n",
@@ -782,9 +828,27 @@
                                 "    name: ", { "Ref": "Username" }, "\n",
                                 "write_files:\n",
                                 "- content: |\n",
-                                "    cluster:\n",
-                                "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
-                                "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n",
+                                "    cluster:\n", {
+                                    "Fn::If": [
+                                        "UseLambda", {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
+                                                    "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n"
+                                                ]
+                                            ]
+                                        }, {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "      uuid: '", { "Fn::GetAtt": [ "FlightSG", "GroupId" ] }, "'\n",
+                                                    "      token: '", { "Fn::GetAtt": [ "FlightSG", "GroupId" ] }, "'\n"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                },
                                 "      name: '", { "Ref": "AWS::StackName" }, "'\n",
                                 "      role: 'slave'\n",
                                 "      master: ", { "Fn::GetAtt": [ "FlightLogin", "PrivateIp" ] }, "\n",
