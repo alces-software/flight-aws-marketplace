@@ -727,8 +727,8 @@
                                             "Fn::Join": [
                                                 "",
                                                 [
-                                                    "      uuid: '", { "Fn::GetAtt": [ "FlightSG", "GroupId" ] }, "'\n",
-                                                    "      token: '", { "Fn::GetAtt": [ "FlightSG", "GroupId" ] }, "'\n"
+                                                    "      uuid: '", { "Ref": "AWS::StackId" }, "'\n",
+                                                    "      token: '", { "Ref": "AWS::StackId" }, "'\n"
                                                 ]
                                             ]
                                         }
@@ -842,8 +842,8 @@
                                             "Fn::Join": [
                                                 "",
                                                 [
-                                                    "      uuid: '", { "Fn::GetAtt": [ "FlightSG", "GroupId" ] }, "'\n",
-                                                    "      token: '", { "Fn::GetAtt": [ "FlightSG", "GroupId" ] }, "'\n"
+                                                    "      uuid: '", { "Ref": "AWS::StackId" }, "'\n",
+                                                    "      token: '", { "Ref": "AWS::StackId" }, "'\n"
                                                 ]
                                             ]
                                         }
