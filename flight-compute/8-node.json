@@ -52,10 +52,17 @@
             ]
         },
         "InitialNodes": {
-            "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
+            "Description": "Enter how many nodes to start initially. Minimum 1 (NB only used when Autoscaling box is set to 1)",
+            "Type": "Number",
+            "Default": "8",
+            "MaxValue": "8",
+            "MinValue": "1"
+        },
+        "ComputeAutoscaling": {
+            "Description": "Enter 1 to enable Autoscaling, 0 to disable (NB if enabled you may also want to specify InitialNodes)",
             "Type": "Number",
             "Default": "0",
-            "MaxValue": "8",
+            "MaxValue": "1",
             "MinValue": "0"
         },
         "LoginSystemDiskSize": {
@@ -98,7 +105,7 @@
                 {
                     "Fn::Equals": [
                         {
-                            "Ref": "InitialNodes"
+                            "Ref": "ComputeAutoscaling"
                         },
                         "0"
                     ]
