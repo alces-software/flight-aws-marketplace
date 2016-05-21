@@ -6,7 +6,7 @@
              "ConstraintDescription": "Please specify a valid CIDR, e.g. 0.0.0.0/0"
 +        },
 +        "MaxNodes": {
-+            "Description": "Enter the maxmimum number of nodes to scale to (when scaling is enabled) - Max 32",
++            "Description": "Enter the maxmimum number of nodes to scale to (when scaling is enabled) - max 32.",
 +            "Type": "Number",
 +            "Default": "32",
 +            "MaxValue": "32"
