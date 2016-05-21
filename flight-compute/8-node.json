@@ -46,14 +46,23 @@
                 "memory.small-r3.xlarge",
                 "memory.medium-r3.2xlarge",
                 "memory.large-r3.4xlarge",
-                "memory.dedicated-r3.8xlarge"
+                "memory.dedicated-r3.8xlarge",
+                "gpu.medium-g2.2xlarge",
+                "gpu.dedicated-g2.8xlarge"
             ]
         },
         "InitialNodes": {
-            "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
+            "Description": "Enter how many nodes to start initially. Minimum 1 (NB only used when Autoscaling box is set to 1)",
+            "Type": "Number",
+            "Default": "8",
+            "MaxValue": "8",
+            "MinValue": "1"
+        },
+        "ComputeAutoscaling": {
+            "Description": "Enter 1 to enable Autoscaling, 0 to disable (NB if enabled you may also want to specify InitialNodes)",
             "Type": "Number",
             "Default": "0",
-            "MaxValue": "8",
+            "MaxValue": "1",
             "MinValue": "0"
         },
         "LoginSystemDiskSize": {
@@ -109,7 +118,7 @@
                 {
                     "Fn::Equals": [
                         {
-                            "Ref": "InitialNodes"
+                            "Ref": "ComputeAutoscaling"
                         },
                         "0"
                     ]
@@ -161,16 +170,16 @@
     },
     "Mappings": {
         "AWSRegionArch2AMI" : {
-            "us-east-1"      : { "HVM64" : "ami-621bf00f" },
-            "us-west-2"      : { "HVM64" : "ami-3d86795d" },
-            "us-west-1"      : { "HVM64" : "ami-d5a9d1b5" },
-            "eu-west-1"      : { "HVM64" : "ami-73c55200" },
-            "ap-southeast-1" : { "HVM64" : "ami-05429466" },
-            "ap-northeast-1" : { "HVM64" : "ami-59668738" },
-            "ap-southeast-2" : { "HVM64" : "ami-4d06292e" },
-            "sa-east-1"      : { "HVM64" : "ami-6f68e003" },
+            "us-east-1"      : { "HVM64" : "" },
+            "us-west-2"      : { "HVM64" : "" },
+            "us-west-1"      : { "HVM64" : "" },
+            "eu-west-1"      : { "HVM64" : "ami-74d84e07" },
+            "ap-southeast-1" : { "HVM64" : "" },
+            "ap-northeast-1" : { "HVM64" : "" },
+            "ap-southeast-2" : { "HVM64" : "" },
+            "sa-east-1"      : { "HVM64" : "" },
             "cn-north-1"     : { "HVM64" : "NOT_SUPPORTED" },
-            "eu-central-1"   : { "HVM64" : "ami-d4cb27bb" }
+            "eu-central-1"   : { "HVM64" : "" }
         },
         "AWSRegionFeatures" : {
             "us-east-1"      : { "Lambda" : "true" },
@@ -713,27 +722,8 @@
                                 "hostname: login1\n",
                                 "write_files:\n",
                                 "- content: |\n",
-                                "    cluster:\n", {
-                                    "Fn::If": [
-                                        "UseLambda", {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
-                                                    "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n"
-                                                ]
-                                            ]
-                                        }, {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "      uuid: '", { "Ref": "AWS::StackId" }, "'\n",
-                                                    "      token: '", { "Ref": "AWS::StackId" }, "'\n"
-                                                ]
-                                            ]
-                                        }
-                                    ]
-                                },
+                                "    cluster:\n",
+                                { "Fn::Join": ["", ["      identity: '", { "Ref": "AWS::StackId" }, "'\n"] ] },
                                 "      name: '", { "Ref": "AWS::StackName" }, "'\n",
                                 "      role: 'master'\n",
                                 "      tags:\n",
@@ -828,27 +818,8 @@
                                 "    name: ", { "Ref": "Username" }, "\n",
                                 "write_files:\n",
                                 "- content: |\n",
-                                "    cluster:\n", {
-                                    "Fn::If": [
-                                        "UseLambda", {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "      uuid: '", { "Fn::GetAtt": [ "ClusterIdentity", "Uuid" ] }, "'\n",
-                                                    "      token: '", { "Fn::GetAtt": [ "ClusterIdentity", "Token" ] }, "'\n"
-                                                ]
-                                            ]
-                                        }, {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "      uuid: '", { "Ref": "AWS::StackId" }, "'\n",
-                                                    "      token: '", { "Ref": "AWS::StackId" }, "'\n"
-                                                ]
-                                            ]
-                                        }
-                                    ]
-                                },
+                                "    cluster:\n",
+                                { "Fn::Join": ["", ["      identity: '", { "Ref": "AWS::StackId" }, "'\n"] ] },
                                 "      name: '", { "Ref": "AWS::StackName" }, "'\n",
                                 "      role: 'slave'\n",
                                 "      master: ", { "Fn::GetAtt": [ "FlightLogin", "PrivateIp" ] }, "\n",
