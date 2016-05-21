@@ -52,14 +52,14 @@
             ]
         },
         "InitialNodes": {
-            "Description": "Enter how many nodes to start initially. Minimum 1 (NB only used when Autoscaling box is set to 1)",
+            "Description": "Enter how many nodes to start initially. Minimum 1 (N.B. only used when Autoscaling box is set to 1)",
             "Type": "Number",
             "Default": "8",
             "MaxValue": "8",
             "MinValue": "1"
         },
         "ComputeAutoscaling": {
-            "Description": "Enter 1 to enable Autoscaling, 0 to disable (NB if enabled you may also want to specify InitialNodes)",
+            "Description": "Enter 1 to enable Autoscaling, 0 to disable (N.B. if enabled you may also want to specify InitialNodes)",
             "Type": "Number",
             "Default": "0",
             "MaxValue": "1",
