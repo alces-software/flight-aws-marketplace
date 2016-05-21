@@ -88,19 +88,6 @@
         }
     },
     "Conditions": {
-        "UseLambda": {
-            "Fn::Equals": [
-                {
-                    "Fn::FindInMap": [
-                        "AWSRegionFeatures", {
-                            "Ref" : "AWS::Region"
-                        },
-                        "Lambda"
-                    ]
-                },
-                "true"
-            ]
-        },
         "UseSpotCompute": {
             "Fn::Not": [
                 {
@@ -377,66 +364,6 @@
                         "CidrIp": "0.0.0.0/0"
                     }
                 ]
-            }
-        },
-        "LambdaExecutionIAM": {
-            "Condition":  "UseLambda",
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [{
-                        "Effect": "Allow",
-                        "Principal": {"Service": ["lambda.amazonaws.com"]},
-                        "Action": ["sts:AssumeRole"]
-                    }]
-                },
-                "Path": "/",
-                "Policies": [{
-                    "PolicyName": "LambdaExecutionPermissions",
-                    "PolicyDocument": {
-                        "Version": "2012-10-17",
-                        "Statement": [{
-                            "Effect": "Allow",
-                            "Action": ["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"],
-                            "Resource": "arn:aws:logs:*:*:*"
-                        }]
-                    }
-                }]
-            }
-        },
-        "ClusterIdentityFunction": {
-            "Condition":  "UseLambda",
-            "Type": "AWS::Lambda::Function",
-            "Properties": {
-                "Code": {
-                    "ZipFile": {
-                        "Fn::Join": [
-                            "\n", [
-                                "var response = require('cfn-response');",
-                                "exports.handler = function(event, context) {",
-                                "  var responseData = {",
-                                "    Uuid: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {var r = Math.random()*16|0,v=c=='x'?r:r&0x3|0x8;return v.toString(16);}),",
-                                "    Token: Math.random().toString(36).substring(7)",
-                                "  };",
-                                "  response.send(event, context, response.SUCCESS, responseData);",
-                                "};"
-                            ]
-                        ]
-                    }
-                },
-                "Handler": "index.handler",
-                "Runtime": "nodejs",
-                "Timeout": "30",
-                "Role": { "Fn::GetAtt": ["LambdaExecutionIAM", "Arn"] }
-            }
-        },
-        "ClusterIdentity": {
-            "Condition":  "UseLambda",
-            "Type": "Custom::ClusterIdentity",
-            "Properties": {
-                "ServiceToken": { "Fn::GetAtt": ["ClusterIdentityFunction", "Arn"] },
-                "Region": { "Ref": "AWS::Region" }
             }
         },
         "MasterIAM": {
