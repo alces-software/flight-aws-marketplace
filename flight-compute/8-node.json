@@ -46,7 +46,9 @@
                 "memory.small-r3.xlarge",
                 "memory.medium-r3.2xlarge",
                 "memory.large-r3.4xlarge",
-                "memory.dedicated-r3.8xlarge"
+                "memory.dedicated-r3.8xlarge",
+                "gpu.medium-g2.2xlarge",
+                "gpu.dedicated-g2.8xlarge"
             ]
         },
         "InitialNodes": {
