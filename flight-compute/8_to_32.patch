@@ -1,24 +1,26 @@
---- 32-node.json	2016-05-14 11:57:39.000000000 +0100
-+++ 32-node.json	2016-05-14 11:58:32.000000000 +0100
-@@ -55,7 +55,7 @@
-             "Description": "Enter how many nodes to start initially. For efficiency, we recommend starting with a small number and allow autoscaling to add nodes when you have jobs waiting in the queue. (Enter 0 to disable autoscaling and start all nodes at init)",
+--- 32-node.json	2016-05-21 15:40:09.000000000 +0100
++++ 32-node.json	2016-05-21 16:09:34.000000000 +0100
+@@ -54,8 +54,8 @@
+         "InitialNodes": {
+             "Description": "Enter how many nodes to start initially. Minimum 1 (N.B. only used when Autoscaling box is set to 1)",
              "Type": "Number",
-             "Default": "0",
+-            "Default": "8",
 -            "MaxValue": "8",
++            "Default": "32",
 +            "MaxValue": "32",
-             "MinValue": "0"
+             "MinValue": "1"
          },
-         "LoginSystemDiskSize": {
-@@ -66,7 +66,7 @@
+         "ComputeAutoscaling": {
+@@ -73,7 +73,7 @@
          "LoginType": {
-             "Description": "Select the login node instance type to deploy - this defines the number of cores and memory available",
+             "Description": "Select the login node instance type to deploy - this defines the number of cores and memory available.",
              "Type": "String",
 -            "Default": "small-t2.large",
 +            "Default": "large-c4.8xlarge",
              "AllowedValues": [
                  "small-t2.large",
                  "medium-r3.2xlarge",
-@@ -760,7 +760,7 @@
+@@ -777,7 +777,7 @@
                          {
                              "Ref": "InitialNodes"
                          },
@@ -27,7 +29,7 @@
                      ]
                    },
                    "LaunchConfigurationName": {
-@@ -787,7 +787,7 @@
+@@ -804,7 +804,7 @@
                        }
                    ],
                    "MinSize": "1",
@@ -36,7 +38,7 @@
                    "VPCZoneIdentifier": [
                      {
                          "Ref": "FlightSubnet"
-@@ -804,7 +804,7 @@
+@@ -821,7 +821,7 @@
                      "Ref": "FlightCompute"
                  },
                  "Cooldown": "300",
