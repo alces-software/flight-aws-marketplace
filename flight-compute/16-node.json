@@ -59,7 +59,7 @@
             "MinValue": "1"
         },
         "ComputeAutoscaling": {
-            "Description": "Enter 1 to enable Autoscaling, 0 to disable (N.B. if enabled you may also want to specify InitialNodes)",
+            "Description": "Enter 1 to enable Flights built-in Idle node shutdown, 0 to disable (N.B. if enabled you may also want to specify InitialNodes)",
             "Type": "Number",
             "Default": "0",
             "MaxValue": "1",
