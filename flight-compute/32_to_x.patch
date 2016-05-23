@@ -4,8 +4,7 @@
                  "gpu.dedicated-g2.8xlarge"
              ]
          },
--        "InitialNodes": {
-+        "InitialNodes":
+         "InitialNodes": {
              "Description": "Enter how many nodes to start initially. Minimum 1 (N.B. only used when Autoscaling box is set to 1)",
              "Type": "Number",
 -            "Default": "32",

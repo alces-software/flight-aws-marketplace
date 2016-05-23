@@ -51,10 +51,10 @@
                 "gpu.dedicated-g2.8xlarge"
             ]
         },
-        "InitialNodes":
+        "InitialNodes": {
             "Description": "Enter how many nodes to start initially. Minimum 1 (N.B. only used when Autoscaling box is set to 1)",
             "Type": "Number",
-            "Default": "4",
+            "Default": "32",
             "MaxValue": "32",
             "MinValue": "1"
         },
@@ -73,7 +73,7 @@
         "LoginType": {
             "Description": "Select the login node instance type to deploy - this defines the number of cores and memory available.",
             "Type": "String",
-            "Default": "medium-r3.2xlarge",
+            "Default": "large-c4.8xlarge",
             "AllowedValues": [
                 "small-t2.large",
                 "medium-r3.2xlarge",
@@ -85,13 +85,6 @@
             "Type": "String",
             "AllowedPattern": "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}",
             "ConstraintDescription": "Please specify a valid CIDR, e.g. 0.0.0.0/0"
-        },
-        "MaxNodes": {
-            "Description": "Enter the maxmimum number of nodes to scale to (when scaling is enabled) - max 32.",
-            "Type": "Number",
-            "Default": "4",
-            "MinValue": "4",
-            "MaxValue": "32"
         }
     },
     "Conditions": {
@@ -784,7 +777,7 @@
                         {
                             "Ref": "InitialNodes"
                         },
-                        { "Ref": "MaxNodes" }
+                        "32"
                     ]
                   },
                   "LaunchConfigurationName": {
@@ -811,7 +804,7 @@
                       }
                   ],
                   "MinSize": "1",
-                  "MaxSize": { "Ref": "MaxNodes" },
+                  "MaxSize": "32",
                   "VPCZoneIdentifier": [
                     {
                         "Ref": "FlightSubnet"
