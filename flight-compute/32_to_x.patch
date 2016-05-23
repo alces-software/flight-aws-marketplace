@@ -1,7 +1,11 @@
---- x-node.json	2016-05-23 10:58:44.000000000 +0100
-+++ x-node.json	2016-05-23 11:00:05.000000000 +0100
-@@ -54,7 +54,7 @@
-         "InitialNodes": {
+--- 32-node.json	2016-05-23 11:08:21.000000000 +0100
++++ x-node.json	2016-05-23 11:25:54.000000000 +0100
+@@ -51,10 +51,10 @@
+                 "gpu.dedicated-g2.8xlarge"
+             ]
+         },
+-        "InitialNodes": {
++        "InitialNodes":
              "Description": "Enter how many nodes to start initially. Minimum 1 (N.B. only used when Autoscaling box is set to 1)",
              "Type": "Number",
 -            "Default": "32",
@@ -18,7 +22,7 @@
              "AllowedValues": [
                  "small-t2.large",
                  "medium-r3.2xlarge",
-@@ -85,6 +85,12 @@
+@@ -85,6 +85,13 @@
              "Type": "String",
              "AllowedPattern": "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}",
              "ConstraintDescription": "Please specify a valid CIDR, e.g. 0.0.0.0/0"
@@ -26,12 +30,13 @@
 +        "MaxNodes": {
 +            "Description": "Enter the maxmimum number of nodes to scale to (when scaling is enabled) - max 32.",
 +            "Type": "Number",
-+            "Default": "32",
++            "Default": "4",
++            "MinValue": "4",
 +            "MaxValue": "32"
          }
      },
      "Conditions": {
-@@ -777,7 +783,7 @@
+@@ -778,7 +785,7 @@
                          {
                              "Ref": "InitialNodes"
                          },
@@ -40,7 +45,7 @@
                      ]
                    },
                    "LaunchConfigurationName": {
-@@ -804,7 +810,7 @@
+@@ -805,7 +812,7 @@
                        }
                    ],
                    "MinSize": "1",
