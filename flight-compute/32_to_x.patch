@@ -1,9 +1,6 @@
---- 32-node.json	2016-05-23 11:08:21.000000000 +0100
-+++ x-node.json	2016-05-23 11:25:54.000000000 +0100
-@@ -51,10 +51,10 @@
-                 "gpu.dedicated-g2.8xlarge"
-             ]
-         },
+--- 32-node.json	2016-05-23 12:08:02.000000000 +0100
++++ x-node.json	2016-05-23 13:56:34.000000000 +0100
+@@ -54,7 +54,7 @@
          "InitialNodes": {
              "Description": "Enter how many nodes to start initially. Minimum 1 (N.B. only used when Autoscaling box is set to 1)",
              "Type": "Number",
@@ -35,7 +32,7 @@
          }
      },
      "Conditions": {
-@@ -778,7 +785,7 @@
+@@ -777,7 +784,7 @@
                          {
                              "Ref": "InitialNodes"
                          },
@@ -44,7 +41,7 @@
                      ]
                    },
                    "LaunchConfigurationName": {
-@@ -805,7 +812,7 @@
+@@ -804,7 +811,7 @@
                        }
                    ],
                    "MinSize": "1",
