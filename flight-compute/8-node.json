@@ -33,7 +33,7 @@
         "ComputeType": {
             "Description": "Select the compute node instance type to deploy - this defines the number of cores and amount of memory available.",
             "Type": "String",
-            "Default": "compute.small-c4.large",
+            "Default": "compute-2C-3GB.small-c4.large",
             "AllowedValues": [
                 "compute-2C-3GB.small-c4.large",
                 "compute-8C-15GB.medium-c4.2xlarge",
@@ -198,7 +198,6 @@
             "c4.4xlarge"  : { "Arch" : "HVM64" }
         },
         "FlightTypeToInstanceType": {
- "compute-2C-3GB.small-c4.large" 
           "compute-2C-3GB.small-c4.large": { "InstanceType": "c4.large" },
           "compute-8C-15GB.medium-c4.2xlarge": { "InstanceType": "c4.2xlarge" },
           "compute-16C-30GB.large-c4.4xlarge": { "InstanceType": "c4.4xlarge" },
