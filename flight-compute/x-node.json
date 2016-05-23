@@ -54,7 +54,7 @@
         "InitialNodes": {
             "Description": "Enter how many nodes to start initially. Minimum 1 (N.B. only used when Autoscaling box is set to 1)",
             "Type": "Number",
-            "Default": "32",
+            "Default": "4",
             "MaxValue": "32",
             "MinValue": "1"
         },
@@ -73,7 +73,7 @@
         "LoginType": {
             "Description": "Select the login node instance type to deploy - this defines the number of cores and memory available.",
             "Type": "String",
-            "Default": "large-c4.8xlarge",
+            "Default": "medium-r3.2xlarge",
             "AllowedValues": [
                 "small-t2.large",
                 "medium-r3.2xlarge",
