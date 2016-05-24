@@ -1,0 +1,40 @@
+--- demo.json	2016-05-24 09:53:40.000000000 +0100
++++ demo.json	2016-05-24 11:23:10.000000000 +0100
+@@ -605,7 +605,8 @@
+                         "Ebs": {
+                             "VolumeSize": {
+ 			        "Ref": "LoginSystemDiskSize"
+-                            }
++                            },
++                            "VolumeType": "gp2"
+                         }
+                     },
+                     {
+@@ -673,7 +674,16 @@
+                                 },
+                                 "  owner: root:root\n",
+                                 "  path: /opt/clusterware/etc/config.yml\n",
+-                                "  permissions: '0640'\n"
++                                "  permissions: '0640'\n",
++                                "- content: |\n",
++                                "    sleep 60\n",
++                                "    echo `date` > /tmp/democonfig\n",
++                                "    sed -i -e 's|^# - /opt/clusterware/var/lib/gridware/repos/volatile$| - /opt/clusterware/var/lib/gridware/repos/volatile|g' /opt/gridware/etc/gridware.yml\n",
++                                "  owner: root:root\n",
++                                "  path: /root/democonfig\n",
++                                "  permissions: '0600'\n",
++                                "runcmd:\n",
++                                "- /bin/bash /root/democonfig &\n"
+                             ]
+                         ]
+                     }
+@@ -700,7 +710,8 @@
+                     {
+                         "DeviceName": "/dev/sda1",
+                         "Ebs": {
+-                            "VolumeSize": "20"
++                            "VolumeSize": "20",
++                            "VolumeType": "gp2"
+                         }
+                     }
+                 ],
