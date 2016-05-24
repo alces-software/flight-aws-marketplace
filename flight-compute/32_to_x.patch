@@ -5,7 +5,7 @@
              "Description": "Enter how many nodes to start initially. Minimum 1 (N.B. only used when Autoscaling box is set to 1)",
              "Type": "Number",
 -            "Default": "32",
-+            "Default": "4",
++            "Default": "1",
              "MaxValue": "32",
              "MinValue": "1"
          },
@@ -27,7 +27,7 @@
 +            "Description": "Enter the maxmimum number of nodes to scale to (when scaling is enabled) - max 32.",
 +            "Type": "Number",
 +            "Default": "4",
-+            "MinValue": "4",
++            "MinValue": "1",
 +            "MaxValue": "32"
          }
      },
