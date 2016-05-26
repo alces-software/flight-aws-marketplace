@@ -175,18 +175,6 @@
             "cn-north-1"     : { "HVM64" : "NOT_SUPPORTED" },
             "eu-central-1"   : { "HVM64" : "" }
         },
-        "AWSRegionFeatures" : {
-            "us-east-1"      : { "Lambda" : "true" },
-            "us-west-2"      : { "Lambda" : "true" },
-            "us-west-1"      : { "Lambda" : "false" },
-            "eu-west-1"      : { "Lambda" : "true" },
-            "ap-southeast-1" : { "Lambda" : "false" },
-            "ap-northeast-1" : { "Lambda" : "true" },
-            "ap-southeast-2" : { "Lambda" : "false" },
-            "sa-east-1"      : { "Lambda" : "false" },
-            "cn-north-1"     : { "Lambda" : "false" },
-            "eu-central-1"   : { "Lambda" : "true" }
-        },
         "AWSInstanceType2Arch" : {
             "t2.large"    : { "Arch" : "HVM64" },
             "m4.xlarge"   : { "Arch" : "HVM64" },
