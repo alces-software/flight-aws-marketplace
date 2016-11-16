@@ -157,17 +157,17 @@
     },
     "Mappings": {
         "AWSRegionArch2AMI" : {
-            "us-east-1"      : { "HVM64" : "ami-b747b0da" },
-            "us-west-2"      : { "HVM64" : "ami-ddc03ebd" },
-            "us-west-1"      : { "HVM64" : "ami-e1007b81" },
-            "eu-west-1"      : { "HVM64" : "ami-632cba10" },
-            "ap-southeast-1" : { "HVM64" : "ami-96ca1bf5" },
-            "ap-northeast-1" : { "HVM64" : "ami-a6b250c7" },
-            "ap-northeast-2" : { "HVM64" : "ami-89a46fe7" },
-            "ap-southeast-2" : { "HVM64" : "ami-bd89a6de" },
-            "sa-east-1"      : { "HVM64" : "ami-21e2694d" },
+            "us-east-1"      : { "HVM64" : "ami-c90ecea4" },
+            "us-west-2"      : { "HVM64" : "ami-5fd7133f" },
+            "us-west-1"      : { "HVM64" : "ami-11054171" },
+            "eu-west-1"      : { "HVM64" : "ami-c39e07b0" },
+            "ap-southeast-1" : { "HVM64" : "ami-145d8e77" },
+            "ap-northeast-1" : { "HVM64" : "ami-ebad598a" },
+            "ap-northeast-2" : { "HVM64" : "ami-0a39f264" },
+            "ap-southeast-2" : { "HVM64" : "ami-997058fa" },
+            "sa-east-1"      : { "HVM64" : "ami-2f1d9743" },
             "cn-north-1"     : { "HVM64" : "NOT_SUPPORTED" },
-            "eu-central-1"   : { "HVM64" : "ami-e9b65986" }
+            "eu-central-1"   : { "HVM64" : "ami-fd846c92" }
         },
         "AWSInstanceType2Arch" : {
             "t2.large"    : { "Arch" : "HVM64" },
